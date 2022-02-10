@@ -56,6 +56,7 @@ mod rem;
 mod sub;
 mod trans;
 mod trig;
+mod util;
 
 /// A 128-bit floating-point number implemented as the unevaluated sum of two 64-bit
 /// floating-point numbers. Discarding the bits used for exponents, this makes for about

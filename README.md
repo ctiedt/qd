@@ -13,3 +13,7 @@ The basic functionality of this project is largely finished, but only just. It i
 This project languished for a time while I was handling other things, but it is back under active development, including the recent completion of the quad-double portion.
 
 [Current API documentation is available here](https://barandis.github.com/qd/qd/index.html).
+
+---
+
+This repository is forked from [barandis/qd](https://github.com/barandis/qd). It adds `no_std` compatibility and some functions missing from regular floating point numbers in Rust.
