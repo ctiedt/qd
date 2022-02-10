@@ -3,22 +3,18 @@ use crate::double::Double;
 impl Double {
     /// Returns the minimum of the two numbers.
     pub fn min(self, other: Self) -> Self {
-        match self.partial_cmp(&other) {
-            Some(ordering) => match ordering {
-                core::cmp::Ordering::Less | core::cmp::Ordering::Equal => self,
-                core::cmp::Ordering::Greater => other,
-            },
-            None => other,
+        if self.is_nan() || self >= other {
+            other
+        } else {
+            self
         }
     }
 
     pub fn max(self, other: Self) -> Self {
-        match self.partial_cmp(&other) {
-            Some(ordering) => match ordering {
-                core::cmp::Ordering::Less | core::cmp::Ordering::Equal => other,
-                core::cmp::Ordering::Greater => self,
-            },
-            None => other,
+        if self.is_nan() || self >= other {
+            self
+        } else {
+            other
         }
     }
 
