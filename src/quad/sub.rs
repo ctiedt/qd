@@ -146,6 +146,7 @@ impl SubAssign<&Quad> for Quad {
     }
 }
 
+#[allow(clippy::op_ref)]
 #[cfg(test)]
 mod tests {
     use super::*;

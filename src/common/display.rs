@@ -104,12 +104,14 @@ pub fn adjust_prec(digits: &mut Vec<u8>, exp: i32, prec: Option<usize>) {
         // If exp < 0, we add 1 for the zero before the decimal point
         let desired = if exp < 0 { p + 1 } else { exp as usize + p + 1 };
 
-        if desired > digits.len() {
-            digits.append(&mut alloc::vec![0; desired - digits.len()]);
-        } else if desired < digits.len() {
-            // The only other option is desired == digits.len(), as zeros would have
-            // already been appended if desired > digits.len()
-            round_and_trunc(digits, desired);
+        match desired.cmp(&digits.len()) {
+            core::cmp::Ordering::Less => round_and_trunc(digits, desired),
+            core::cmp::Ordering::Equal => unreachable!(),
+            core::cmp::Ordering::Greater => {
+                // The only other option is desired == digits.len(), as zeros would have
+                // already been appended if desired > digits.len()
+                digits.append(&mut alloc::vec![0; desired - digits.len()])
+            }
         }
     }
 }

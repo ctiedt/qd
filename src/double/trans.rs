@@ -568,9 +568,7 @@ impl Double {
 
     #[inline]
     fn pre_ln(&self) -> Option<Double> {
-        if self.is_nan() {
-            Some(Double::NAN)
-        } else if self.is_sign_negative() {
+        if self.is_nan() || self.is_sign_negative() {
             Some(Double::NAN)
         } else if self.is_zero() {
             Some(Double::NEG_INFINITY)
@@ -604,9 +602,7 @@ impl Double {
 
     #[inline]
     fn pre_log(&self, b: &Double) -> Option<Double> {
-        if self.is_nan() {
-            Some(Double::NAN)
-        } else if b.is_sign_negative() || b.is_zero() {
+        if self.is_nan() || b.is_sign_negative() || b.is_zero() {
             Some(Double::NAN)
         } else {
             None

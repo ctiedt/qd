@@ -213,6 +213,7 @@ impl Double {
     }
 }
 
+#[allow(clippy::op_ref)]
 #[cfg(test)]
 mod tests {
     use super::*;

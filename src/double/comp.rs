@@ -16,11 +16,12 @@ impl PartialEq for Double {
     ///
     /// This implements the `==` and `!=` operators between `Double`s.
     ///
-    /// Equality works exactly the same as it does for system floating-point numbers (`f64`,
-    /// etc.), including zero equalling negative zero, `NaN` equalling nothing (including
-    /// itself), etc. Notably, equality should be used with care since floating-point
-    /// rounding, even with the increased precision of `Double`s, will still cause some
-    /// numbers that should be equal to not be equal.
+    /// Equality works exactly the same as it does for system floating-point
+    /// numbers (`f64`, etc.), including zero equalling negative zero, `NaN`
+    /// equalling nothing (including itself), etc. Notably, equality should
+    /// be used with care since floating-point rounding, even with the
+    /// increased precision of `Double`s, will still cause some numbers that
+    /// should be equal to not be equal.
     ///
     /// # Examples
     /// ```
@@ -31,19 +32,18 @@ impl PartialEq for Double {
     /// assert!(Double::NAN != Double::NAN);
     /// ```
     #[inline]
-    fn eq(&self, other: &Double) -> bool {
-        self.0 == other.0 && self.1 == other.1
-    }
+    fn eq(&self, other: &Double) -> bool { self.0 == other.0 && self.1 == other.1 }
 }
 
 impl PartialOrd for Double {
     /// Calculates how `self` and the argument should be ordered.
     ///
-    /// This implements the `<`, `>`, `<=`, and `>=` operators between two `Double`s.
+    /// This implements the `<`, `>`, `<=`, and `>=` operators between two
+    /// `Double`s.
     ///
-    /// Ordering works the same as it does for system floating-point numbers, including
-    /// [`NAN`] returning false for any of these operators (including when comparing it to
-    /// itself).
+    /// Ordering works the same as it does for system floating-point numbers,
+    /// including [`NAN`] returning false for any of these operators
+    /// (including when comparing it to itself).
     ///
     /// # Examples
     /// ```
@@ -63,6 +63,7 @@ impl PartialOrd for Double {
     }
 }
 
+#[allow(clippy::neg_cmp_op_on_partial_ord)]
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -581,9 +581,7 @@ impl Quad {
 
     #[inline]
     fn pre_ln(&self) -> Option<Quad> {
-        if self.is_nan() {
-            Some(Quad::NAN)
-        } else if self.is_sign_negative() {
+        if self.is_nan() || self.is_sign_negative() {
             Some(Quad::NAN)
         } else if self.is_zero() {
             Some(Quad::NEG_INFINITY)
@@ -617,9 +615,7 @@ impl Quad {
 
     #[inline]
     fn pre_log(&self, b: &Quad) -> Option<Quad> {
-        if self.is_nan() {
-            Some(Quad::NAN)
-        } else if b.is_sign_negative() || b.is_zero() {
+        if self.is_nan() || b.is_sign_negative() || b.is_zero() {
             Some(Quad::NAN)
         } else {
             None

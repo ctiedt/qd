@@ -12,8 +12,8 @@ use core::ops::{Mul, MulAssign};
 impl Mul for Double {
     type Output = Double;
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Double` as the result.
     ///
     /// This implements the `*` operator between two `Double`s.
     ///
@@ -41,8 +41,8 @@ impl Mul for Double {
 impl Mul for &Double {
     type Output = Double;
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Double` as the result.
     ///
     /// This implements the `*` operator between two references to `Double`s.
     ///
@@ -56,18 +56,17 @@ impl Mul for &Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn mul(self, other: &Double) -> Double {
-        (*self).mul(*other)
-    }
+    fn mul(self, other: &Double) -> Double { (*self).mul(*other) }
 }
 
 impl Mul<&Double> for Double {
     type Output = Double;
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Double` as the result.
     ///
-    /// This implements the `*` operator between a `Double` and a reference to a `Double`.
+    /// This implements the `*` operator between a `Double` and a reference to a
+    /// `Double`.
     ///
     /// # Examples
     /// ```
@@ -79,18 +78,17 @@ impl Mul<&Double> for Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn mul(self, other: &Double) -> Double {
-        self.mul(*other)
-    }
+    fn mul(self, other: &Double) -> Double { self.mul(*other) }
 }
 
 impl Mul<Double> for &Double {
     type Output = Double;
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Double` as the result.
     ///
-    /// This implements the `*` operator between a reference to a `Double` and a `Double`.
+    /// This implements the `*` operator between a reference to a `Double` and a
+    /// `Double`.
     ///
     /// # Examples
     /// ```
@@ -102,14 +100,12 @@ impl Mul<Double> for &Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn mul(self, other: Double) -> Double {
-        (*self).mul(other)
-    }
+    fn mul(self, other: Double) -> Double { (*self).mul(other) }
 }
 
 impl MulAssign for Double {
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, assigning the
-    /// result to `self`.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// assigning the result to `self`.
     ///
     /// This implements the `*=` operator between two `Double`s.
     ///
@@ -132,10 +128,11 @@ impl MulAssign for Double {
 }
 
 impl MulAssign<&Double> for Double {
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, assigning the
-    /// result to `self`.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// assigning the result to `self`.
     ///
-    /// This implements the `*=` operator between a `Double` and a reference to a `Double`.
+    /// This implements the `*=` operator between a `Double` and a reference to
+    /// a `Double`.
     ///
     /// # Examples
     /// ```
@@ -158,12 +155,13 @@ impl MulAssign<&Double> for Double {
 impl Double {
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_mul(&self, other: &Double) -> Option<Double> {
@@ -197,6 +195,7 @@ impl Double {
     }
 }
 
+#[allow(clippy::op_ref)]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -302,8 +301,8 @@ mod tests {
             Double::ONE * Double::NAN;
     );
 
-    // Assign tests. Assign code delegates to mul code, so there's no need to re-test all
-    // of the cases above.
+    // Assign tests. Assign code delegates to mul code, so there's no need to
+    // re-test all of the cases above.
     test_all!(
         assign_num: {
             let mut a = Double::PI;

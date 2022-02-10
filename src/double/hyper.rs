@@ -12,15 +12,16 @@ use crate::double::common as c;
 use crate::double::Double;
 
 impl Double {
-    /// Simultaneously computes the hyperbolic sine and cosine of $x$, $\sinh x$ and $\cosh
-    /// x$, where $x$ is `self`.
+    /// Simultaneously computes the hyperbolic sine and cosine of $x$, $\sinh x$
+    /// and $\cosh x$, where $x$ is `self`.
     ///
-    /// The domain of this function is $(-\infin, \infin)$, and the range is $(-\infin,
-    /// \infin)$ for the first component of the answer (the hyperbolic sine) and $[1,
-    /// \infin)$ for the second (the hyperbolic cosine).
+    /// The domain of this function is $(-\infin, \infin)$, and the range is
+    /// $(-\infin, \infin)$ for the first component of the answer (the
+    /// hyperbolic sine) and $[1, \infin)$ for the second (the hyperbolic
+    /// cosine).
     ///
-    /// This method is more efficient to run than [`sinh`] and [`cosh`] individually and is
-    /// useful when both numbers are needed.
+    /// This method is more efficient to run than [`sinh`] and [`cosh`]
+    /// individually and is useful when both numbers are needed.
     ///
     /// # Examples
     /// ```
@@ -59,9 +60,9 @@ impl Double {
 
     /// Computes the hyperbolic sine of $x$, $\sinh x$, where $x$ is `self`.
     ///
-    /// The domain and range of this function are both $(-\infin, \infin)$. Large values
-    /// will start to cause a loss of precision; by the time the number is $\pm130$ or so,
-    /// precision is down to 29 digits.
+    /// The domain and range of this function are both $(-\infin, \infin)$.
+    /// Large values will start to cause a loss of precision; by the time
+    /// the number is $\pm130$ or so, precision is down to 29 digits.
     ///
     /// # Examples
     /// ```
@@ -105,7 +106,8 @@ impl Double {
 
     /// Computes the hyperbolic cosine of $x$, $\cosh x$, where $x$ is `self`.
     ///
-    /// The domain of this function is $(-\infin, \infin)$, and the range is $[1, \infin)$.
+    /// The domain of this function is $(-\infin, \infin)$, and the range is
+    /// $[1, \infin)$.
     ///
     /// # Examples
     /// ```
@@ -128,7 +130,8 @@ impl Double {
 
     /// Computes the hyperbolic tangent of $x$, $\tanh x$, where $x$ is `self`.
     ///
-    /// The domain of this function is $(-\infin, \infin)$, and the range is $(-1, 1)$.
+    /// The domain of this function is $(-\infin, \infin)$, and the range is
+    /// $(-1, 1)$.
     ///
     /// # Examples
     /// ```
@@ -155,7 +158,8 @@ impl Double {
         }
     }
 
-    /// Calculates the inverse hyperbolic sine of $x$, $\sinh^{-1} x$, where $x$ is `self`.
+    /// Calculates the inverse hyperbolic sine of $x$, $\sinh^{-1} x$, where $x$
+    /// is `self`.
     ///
     /// The domain and range of this function are both $(-\infin, \infin)$.
     ///
@@ -175,11 +179,11 @@ impl Double {
         }
     }
 
-    /// Calculates the inverse hyperbolic cosine of $x$, $\cosh^{-1} x$, where $x$ is
-    /// `self`.
+    /// Calculates the inverse hyperbolic cosine of $x$, $\cosh^{-1} x$, where
+    /// $x$ is `self`.
     ///
-    /// The domain of the function is $[1, \infin)$ and the range is $[0, \infin)$. Any
-    /// argument outside the range will result in [`NAN`].
+    /// The domain of the function is $[1, \infin)$ and the range is $[0,
+    /// \infin)$. Any argument outside the range will result in [`NAN`].
     ///
     /// # Examples
     /// ```
@@ -199,11 +203,12 @@ impl Double {
         }
     }
 
-    /// Calculates the inverse hyperbolic tangent of $x$, $\tanh^{-1} x$, where $x$ is
-    /// `self`.
+    /// Calculates the inverse hyperbolic tangent of $x$, $\tanh^{-1} x$, where
+    /// $x$ is `self`.
     ///
-    /// The domain of the function is $(-1, 1)$ and the range is $(-\infin, \infin)$. Any
-    /// argument whose absolute value is greater than or equal to 1 will result in [`NAN`].
+    /// The domain of the function is $(-1, 1)$ and the range is $(-\infin,
+    /// \infin)$. Any argument whose absolute value is greater than or equal
+    /// to 1 will result in [`NAN`].
     ///
     /// # Examples
     /// ```
@@ -225,12 +230,13 @@ impl Double {
 
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_sinh_cosh(&self) -> Option<(Double, Double)> {
@@ -247,9 +253,7 @@ impl Double {
     fn pre_sinh(&self) -> Option<Double> {
         if self.is_nan() {
             Some(Double::NAN)
-        } else if self.is_zero() {
-            Some(*self)
-        } else if self.is_infinite() {
+        } else if self.is_zero() || self.is_infinite() {
             Some(*self)
         } else {
             None

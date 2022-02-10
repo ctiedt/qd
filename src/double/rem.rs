@@ -9,11 +9,12 @@ use core::ops::{Rem, RemAssign};
 impl Rem for Double {
     type Output = Double;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Double` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Double` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
     /// This implements the `%` operator between two `Double`s.
     ///
@@ -39,19 +40,18 @@ impl Rem for Double {
     /// assert!(delta_z < dd!(1e-30));
     /// ```
     #[inline]
-    fn rem(self, other: Double) -> Double {
-        self - other * (self / other).trunc()
-    }
+    fn rem(self, other: Double) -> Double { self - other * (self / other).trunc() }
 }
 
 impl Rem for &Double {
     type Output = Double;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Double` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Double` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
     /// This implements the `%` operator between two references to `Double`s.
     ///
@@ -77,21 +77,21 @@ impl Rem for &Double {
     /// assert!(delta_z < dd!(1e-30));
     /// ```
     #[inline]
-    fn rem(self, other: &Double) -> Double {
-        *self % *other
-    }
+    fn rem(self, other: &Double) -> Double { *self % *other }
 }
 
 impl Rem<&Double> for Double {
     type Output = Double;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Double` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Double` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
-    /// This implements the `%` operator between a `Double` and a reference to a `Double`.
+    /// This implements the `%` operator between a `Double` and a reference to a
+    /// `Double`.
     ///
     /// # Examples
     /// ```
@@ -115,21 +115,21 @@ impl Rem<&Double> for Double {
     /// assert!(delta_z < dd!(1e-30));
     /// ```
     #[inline]
-    fn rem(self, other: &Double) -> Double {
-        self % *other
-    }
+    fn rem(self, other: &Double) -> Double { self % *other }
 }
 
 impl Rem<Double> for &Double {
     type Output = Double;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Double` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Double` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
-    /// This implements the `%` operator between a reference to a `Double`s and a `Double`.
+    /// This implements the `%` operator between a reference to a `Double`s and
+    /// a `Double`.
     ///
     /// # Examples
     /// ```
@@ -153,17 +153,16 @@ impl Rem<Double> for &Double {
     /// assert!(delta_z < dd!(1e-30));
     /// ```
     #[inline]
-    fn rem(self, other: Double) -> Double {
-        *self % other
-    }
+    fn rem(self, other: Double) -> Double { *self % other }
 }
 
 impl RemAssign for Double {
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// assigning the result to `self`.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, assigning the result to `self`.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
     /// This implements the `%=` operator between two `Double`s.
     ///
@@ -200,13 +199,15 @@ impl RemAssign for Double {
 }
 
 impl RemAssign<&Double> for Double {
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// assigning the result to `self`.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, assigning the result to `self`.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
-    /// This implements the `%=` operator between a `Double` and a reference to a `Double`.
+    /// This implements the `%=` operator between a `Double` and a reference to
+    /// a `Double`.
     ///
     /// # Examples
     /// ```
@@ -240,6 +241,7 @@ impl RemAssign<&Double> for Double {
     }
 }
 
+#[allow(clippy::op_ref)]
 #[cfg(test)]
 mod tests {
     use super::*;
