@@ -5,13 +5,13 @@
 
 use crate::common::utils as u;
 use crate::double::Double;
-use std::f64;
-use std::num::FpCategory;
+use core::f64;
+use core::num::FpCategory;
 
 impl Double {
-    /// Calculates the absolute value of $x$, $|x|$, where $x$ is `self`. The absolute value
-    /// of $x$ is simply the same value as $x$, but with the opposite sign if $x$ is
-    /// negative.
+    /// Calculates the absolute value of $x$, $|x|$, where $x$ is `self`. The
+    /// absolute value of $x$ is simply the same value as $x$, but with the
+    /// opposite sign if $x$ is negative.
     ///
     /// # Examples
     /// ```
@@ -30,9 +30,9 @@ impl Double {
 
     /// Calculates the floor of $x$, $\lfloor{x}\rfloor$, where $x$ is `self`.\
     ///
-    /// The floor of $x$ is the largest integer value less than or equal to $x$. This means
-    /// that the floor of a negative number will have an absolute value greater than that of
-    /// the number itself.
+    /// The floor of $x$ is the largest integer value less than or equal to $x$.
+    /// This means that the floor of a negative number will have an absolute
+    /// value greater than that of the number itself.
     ///
     /// # Examples
     /// ```
@@ -47,10 +47,10 @@ impl Double {
     /// ```
     #[inline]
     pub fn floor(self) -> Double {
-        let hi = self.0.floor();
+        let hi = libm::floor(self.0);
 
-        if (hi - self.0).abs() < f64::EPSILON {
-            let (a, b) = u::renorm2(hi, self.1.floor());
+        if libm::fabs(hi - self.0) < f64::EPSILON {
+            let (a, b) = u::renorm2(hi, libm::floor(self.1));
             Double(a, b)
         } else {
             Double(hi, 0.0)
@@ -59,9 +59,10 @@ impl Double {
 
     /// Calculates the ceiling of $x$, $\lceil{x}\rceil$, where $x$ is `self`.
     ///
-    /// The ceiling of $x$ is the smallest integer value greater than or equal to $x$. This
-    /// means that the ceiling of a negative number will have an absolute value the same as
-    /// (not greater than) that of the number itself.
+    /// The ceiling of $x$ is the smallest integer value greater than or equal
+    /// to $x$. This means that the ceiling of a negative number will have
+    /// an absolute value the same as (not greater than) that of the number
+    /// itself.
     ///
     /// # Examples
     /// ```
@@ -76,10 +77,10 @@ impl Double {
     /// ```
     #[inline]
     pub fn ceil(self) -> Double {
-        let hi = self.0.ceil();
+        let hi = libm::ceil(self.0);
 
-        if (hi - self.0).abs() < f64::EPSILON {
-            let (a, b) = u::renorm2(hi, self.1.ceil());
+        if libm::fabs(hi - self.0) < f64::EPSILON {
+            let (a, b) = u::renorm2(hi, libm::ceil(self.1));
             Double(a, b)
         } else {
             Double(hi, 0.0)
@@ -88,9 +89,9 @@ impl Double {
 
     /// Calculates the rounded value of $x$, where $x$ is `self`.
     ///
-    /// The rounded value is the nearest integer to $x$. Halfway cases (i.e., numbers with a
-    /// fractional portion of `0.5`) are rounded away from `0`, per the behavior of `f64`'s
-    /// `round` function.
+    /// The rounded value is the nearest integer to $x$. Halfway cases (i.e.,
+    /// numbers with a fractional portion of `0.5`) are rounded away from
+    /// `0`, per the behavior of `f64`'s `round` function.
     ///
     /// # Examples
     /// ```
@@ -105,21 +106,21 @@ impl Double {
     /// ```
     #[inline]
     pub fn round(self) -> Double {
-        let hi = self.0.round();
+        let hi = libm::round(self.0);
 
-        if (hi - self.0).abs() < f64::EPSILON {
-            let lo = self.1.round();
+        if libm::fabs(hi - self.0) < f64::EPSILON {
+            let lo = libm::round(self.1);
             let (a, b) = u::renorm2(hi, lo);
             Double(a, b)
-        } else if ((hi - self.0).abs() - 0.5).abs() < f64::EPSILON && self.1 < 0.0 {
+        } else if libm::fabs(libm::fabs(hi - self.0) - 0.5) < f64::EPSILON && self.1 < 0.0 {
             Double(hi - 1.0, 0.0)
         } else {
             Double(hi, 0.0)
         }
     }
 
-    /// Returns the integer part of `self`. This integer part will be of the same sign as
-    /// the original number.
+    /// Returns the integer part of `self`. This integer part will be of the
+    /// same sign as the original number.
     ///
     /// # Examples
     /// ```
@@ -139,8 +140,8 @@ impl Double {
         }
     }
 
-    /// Returns the fractional part of the `self`. This fractional part will be of the same
-    /// sign as the original number.
+    /// Returns the fractional part of the `self`. This fractional part will be
+    /// of the same sign as the original number.
     ///
     /// # Examples
     /// ```
@@ -155,14 +156,13 @@ impl Double {
     /// assert!(gdiff < dd!(1e-30));
     /// ```
     #[inline]
-    pub fn fract(self) -> Double {
-        self - self.trunc()
-    }
+    pub fn fract(self) -> Double { self - self.trunc() }
 
     /// Returns a number that represents the sign of `self`.
     ///
     /// * [`ONE`] if `self` is positive, including `+0.0` and [`INFINITY`]
-    /// * [`NEG_ONE`] if `self` is negative, including `-0.0` and [`NEG_INFINITY`]
+    /// * [`NEG_ONE`] if `self` is negative, including `-0.0` and
+    ///   [`NEG_INFINITY`]
     /// * [`NAN`] if `self` is [`NAN`]
     ///
     /// # Examples
@@ -191,23 +191,25 @@ impl Double {
 
     /// Returns `self`'s floating point category.
     ///
-    /// The possible return values are the members of [`FpCategory`], as follows:
+    /// The possible return values are the members of [`FpCategory`], as
+    /// follows:
     ///
     /// * `FpCategory::Zero` if the number is $\pm0$;
     /// * `FpCategory::Infinite` if the number is $\pm\infin$;
     /// * `FpCategory::Nan` if the number is not a number;
-    /// * `FpCategory::Subnormal` if the number is $\pm$[`MIN_POSITIVE`] (numbers this small
-    ///     can be represented, but they lose some accuracy);
+    /// * `FpCategory::Subnormal` if the number is $\pm$[`MIN_POSITIVE`]
+    ///   (numbers this small can be represented, but they lose some accuracy);
     /// * `FpCategory::Normal` if the number is anything else.
     ///
-    /// A `Double` can also register as `FpCategory::Subnormal` if it has a small enough
-    /// negative exponent that the second component of the number is a subnormal number
-    /// itself. This will typically happen around `1e-292` or so.
+    /// A `Double` can also register as `FpCategory::Subnormal` if it has a
+    /// small enough negative exponent that the second component of the
+    /// number is a subnormal number itself. This will typically happen
+    /// around `1e-292` or so.
     ///
     /// # Examples
     /// ```
     /// # use qd::{dd, Double};
-    /// use std::num::FpCategory;
+    /// use core::num::FpCategory;
     ///
     /// let num = dd!(12.4);
     /// let inf = Double::INFINITY;
@@ -249,9 +251,7 @@ impl Double {
     /// assert!(!lower.is_normal());
     /// ```
     #[inline]
-    pub fn is_normal(self) -> bool {
-        self.classify() == FpCategory::Normal
-    }
+    pub fn is_normal(self) -> bool { self.classify() == FpCategory::Normal }
 
     /// Returns `true` if `self` is either positive or negative zero.
     ///
@@ -263,12 +263,10 @@ impl Double {
     /// assert!(!Double::PI.is_zero());
     /// ```
     #[inline]
-    pub fn is_zero(self) -> bool {
-        self.0 == 0.0
-    }
+    pub fn is_zero(self) -> bool { self.0 == 0.0 }
 
-    /// Returns `true` if `self` is negative, including negative zero, negative infinity,
-    /// and `NaN` with a negative sign bit.
+    /// Returns `true` if `self` is negative, including negative zero, negative
+    /// infinity, and `NaN` with a negative sign bit.
     ///
     /// # Examples
     /// ```
@@ -280,12 +278,10 @@ impl Double {
     /// assert!(!dd!(7.0).is_sign_negative());
     /// ```
     #[inline]
-    pub fn is_sign_negative(self) -> bool {
-        self.0.is_sign_negative()
-    }
+    pub fn is_sign_negative(self) -> bool { self.0.is_sign_negative() }
 
-    /// Returns `true` if `self` is positive, including positive zero, positive infinity and
-    /// `NaN` with a positive sign bit.
+    /// Returns `true` if `self` is positive, including positive zero, positive
+    /// infinity and `NaN` with a positive sign bit.
     ///
     /// # Examples
     /// ```
@@ -297,14 +293,12 @@ impl Double {
     /// assert!(!dd!(-7.0).is_sign_positive());
     /// ```
     #[inline]
-    pub fn is_sign_positive(self) -> bool {
-        self.0.is_sign_positive()
-    }
+    pub fn is_sign_positive(self) -> bool { self.0.is_sign_positive() }
 
     /// Returns `true` if `self` is `NaN`.
     ///
-    /// This is the proper way to test for `NaN` because it cannot be done with an equality
-    /// test (since `NaN` is not equal to itself).
+    /// This is the proper way to test for `NaN` because it cannot be done with
+    /// an equality test (since `NaN` is not equal to itself).
     ///
     /// # Examples
     /// ```
@@ -313,9 +307,7 @@ impl Double {
     /// assert!(!dd!(7.0).is_nan());
     /// ```
     #[inline]
-    pub fn is_nan(self) -> bool {
-        self.0.is_nan()
-    }
+    pub fn is_nan(self) -> bool { self.0.is_nan() }
 
     /// Returns `true` if `self` is positive or negative infinity.
     ///
@@ -328,9 +320,7 @@ impl Double {
     /// assert!(!dd!(7.0).is_infinite());
     /// ```
     #[inline]
-    pub fn is_infinite(self) -> bool {
-        self.0.is_infinite()
-    }
+    pub fn is_infinite(self) -> bool { self.0.is_infinite() }
 
     /// Returns `true` if `self` is neither infinite nor `NaN`.
     ///
@@ -343,16 +333,16 @@ impl Double {
     /// assert!(dd!(7.0).is_finite());
     /// ```
     #[inline]
-    pub fn is_finite(self) -> bool {
-        self.0.is_finite()
-    }
+    pub fn is_finite(self) -> bool { self.0.is_finite() }
 
-    /// Returns `true` if `self` has an absolute value of less than [`MIN_POSITIVE`].
+    /// Returns `true` if `self` has an absolute value of less than
+    /// [`MIN_POSITIVE`].
     ///
-    /// Numbers this small can be represented by floating point numbers, but they are not as
-    /// accurate. This inaccuracy is inherent in the IEEE-754 format for 64-bit numbers;
-    /// making a double-double out of an inaccurate number means the double-double is also
-    /// going to be inaccurate.
+    /// Numbers this small can be represented by floating point numbers, but
+    /// they are not as accurate. This inaccuracy is inherent in the
+    /// IEEE-754 format for 64-bit numbers; making a double-double out of an
+    /// inaccurate number means the double-double is also going to be
+    /// inaccurate.
     ///
     /// # Examples
     /// ```
@@ -363,15 +353,13 @@ impl Double {
     ///
     /// [`MIN_POSITIVE`]: #associatedconstant.MIN_POSITIVE
     #[inline]
-    pub fn is_subnormal(self) -> bool {
-        self.classify() == FpCategory::Subnormal
-    }
+    pub fn is_subnormal(self) -> bool { self.classify() == FpCategory::Subnormal }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::num::FpCategory::*;
+    use core::num::FpCategory::*;
 
     // abs tests
     test_all_exact!(

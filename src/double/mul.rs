@@ -6,7 +6,7 @@
 use crate::common::primitive as p;
 use crate::common::utils as u;
 use crate::double::Double;
-use std::ops::{Mul, MulAssign};
+use core::ops::{Mul, MulAssign};
 
 #[allow(clippy::suspicious_arithmetic_impl)]
 impl Mul for Double {

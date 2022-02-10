@@ -5,13 +5,13 @@
 
 use crate::common::utils as u;
 use crate::quad::Quad;
-use std::f64;
-use std::num::FpCategory;
+use core::f64;
+use core::num::FpCategory;
 
 impl Quad {
-    /// Calculates the absolute value of $x$, $|x|$, where $x$ is `self`. The absolute value
-    /// of $x$ is simply the same value as $x$, but with the opposite sign if $x$ is
-    /// negative.
+    /// Calculates the absolute value of $x$, $|x|$, where $x$ is `self`. The
+    /// absolute value of $x$ is simply the same value as $x$, but with the
+    /// opposite sign if $x$ is negative.
     ///
     /// # Examples
     /// ```
@@ -30,9 +30,9 @@ impl Quad {
 
     /// Calculates the floor of $x$, $\lfloor{x}\rfloor$, where $x$ is `self`.\
     ///
-    /// The floor of $x$ is the largest integer value less than or equal to $x$. This means
-    /// that the floor of a negative number will have an absolute value greater than that of
-    /// the number itself.
+    /// The floor of $x$ is the largest integer value less than or equal to $x$.
+    /// This means that the floor of a negative number will have an absolute
+    /// value greater than that of the number itself.
     ///
     /// # Examples
     /// ```
@@ -45,17 +45,17 @@ impl Quad {
     /// ```
     #[inline]
     pub fn floor(self) -> Quad {
-        let a = self.0.floor();
+        let a = libm::floor(self.0);
         let mut b = 0.0;
         let mut c = 0.0;
         let mut d = 0.0;
 
-        if (a - self.0).abs() < f64::EPSILON {
-            b = self.1.floor();
-            if (b - self.1).abs() < f64::EPSILON {
-                c = self.2.floor();
-                if (c - self.2).abs() < f64::EPSILON {
-                    d = self.3.floor();
+        if libm::fabs(a - self.0) < f64::EPSILON {
+            b = libm::floor(self.1);
+            if libm::fabs(b - self.1) < f64::EPSILON {
+                c = libm::floor(self.2);
+                if libm::fabs(c - self.2) < f64::EPSILON {
+                    d = libm::floor(self.3);
                 }
             }
             let (a, b, c, d) = u::renorm4(a, b, c, d);
@@ -67,9 +67,10 @@ impl Quad {
 
     /// Calculates the ceiling of $x$, $\lceil{x}\rceil$, where $x$ is `self`.
     ///
-    /// The ceiling of $x$ is the smallest integer value greater than or equal to $x$. This
-    /// means that the ceiling of a negative number will have an absolute value the same as
-    /// (not greater than) that of the number itself.
+    /// The ceiling of $x$ is the smallest integer value greater than or equal
+    /// to $x$. This means that the ceiling of a negative number will have
+    /// an absolute value the same as (not greater than) that of the number
+    /// itself.
     ///
     /// # Examples
     /// ```
@@ -82,17 +83,17 @@ impl Quad {
     /// ```
     #[inline]
     pub fn ceil(self) -> Quad {
-        let a = self.0.ceil();
+        let a = libm::ceil(self.0);
         let mut b = 0.0;
         let mut c = 0.0;
         let mut d = 0.0;
 
-        if (a - self.0).abs() < f64::EPSILON {
-            b = self.1.ceil();
-            if (b - self.1).abs() < f64::EPSILON {
-                c = self.2.ceil();
-                if (c - self.2).abs() < f64::EPSILON {
-                    d = self.3.ceil();
+        if libm::floor(a - self.0) < f64::EPSILON {
+            b = libm::ceil(self.1);
+            if libm::fabs(b - self.1) < f64::EPSILON {
+                c = libm::ceil(self.2);
+                if libm::fabs(c - self.2) < f64::EPSILON {
+                    d = libm::ceil(self.3);
                 }
             }
             let (a, b, c, d) = u::renorm4(a, b, c, d);
@@ -104,9 +105,9 @@ impl Quad {
 
     /// Calculates the rounded value of $x$, where $x$ is `self`.
     ///
-    /// The rounded value is the nearest integer to $x$. Halfway cases (i.e., numbers with a
-    /// fractional portion of `0.5`) are rounded away from `0`, per the behavior of `f64`'s
-    /// `round` function.
+    /// The rounded value is the nearest integer to $x$. Halfway cases (i.e.,
+    /// numbers with a fractional portion of `0.5`) are rounded away from
+    /// `0`, per the behavior of `f64`'s `round` function.
     ///
     /// # Examples
     /// ```
@@ -119,34 +120,34 @@ impl Quad {
     /// ```
     #[inline]
     pub fn round(self) -> Quad {
-        let a = self.0.round();
-        if (a - self.0).abs() < f64::EPSILON {
-            let b = self.1.round();
-            if (b - self.1).abs() < f64::EPSILON {
-                let c = self.2.round();
-                if (c - self.2).abs() < f64::EPSILON {
-                    let d = self.3.round();
+        let a = libm::round(self.0);
+        if libm::fabs(a - self.0) < f64::EPSILON {
+            let b = libm::round(self.1);
+            if libm::fabs(b - self.1) < f64::EPSILON {
+                let c = libm::round(self.2);
+                if libm::fabs(c - self.2) < f64::EPSILON {
+                    let d = libm::round(self.3);
                     let (a, b, c, d) = u::renorm4(a, b, c, d);
                     Quad(a, b, c, d)
-                } else if ((c - self.2).abs() - 0.5).abs() < f64::EPSILON && self.3 < 0.0 {
+                } else if libm::fabs(libm::fabs(c - self.2) - 0.5) < f64::EPSILON && self.3 < 0.0 {
                     Quad(a, b, c - 1.0, 0.0)
                 } else {
                     Quad(a, b, c, 0.0)
                 }
-            } else if ((b - self.1).abs() - 0.5).abs() < f64::EPSILON && self.2 < 0.0 {
+            } else if libm::fabs(libm::fabs(b - self.1) - 0.5) < f64::EPSILON && self.2 < 0.0 {
                 Quad(a, b - 1.0, 0.0, 0.0)
             } else {
                 Quad(a, b, 0.0, 0.0)
             }
-        } else if ((a - self.0).abs() - 0.5).abs() < f64::EPSILON && self.1 < 0.0 {
+        } else if libm::fabs(libm::fabs(a - self.0) - 0.5) < f64::EPSILON && self.1 < 0.0 {
             Quad(a - 1.0, 0.0, 0.0, 0.0)
         } else {
             Quad(a, 0.0, 0.0, 0.0)
         }
     }
 
-    /// Returns the integer part of `self`. This integer part will be of the same sign as
-    /// the original number.
+    /// Returns the integer part of `self`. This integer part will be of the
+    /// same sign as the original number.
     ///
     /// # Examples
     /// ```
@@ -166,8 +167,8 @@ impl Quad {
         }
     }
 
-    /// Returns the fractional part of the `self`. This fractional part will be of the same
-    /// sign as the original number.
+    /// Returns the fractional part of the `self`. This fractional part will be
+    /// of the same sign as the original number.
     ///
     /// # Examples
     /// ```
@@ -182,14 +183,13 @@ impl Quad {
     /// assert!(gdiff < qd!(1e-60));
     /// ```
     #[inline]
-    pub fn fract(self) -> Quad {
-        self - self.trunc()
-    }
+    pub fn fract(self) -> Quad { self - self.trunc() }
 
     /// Returns a number that represents the sign of `self`.
     ///
     /// * [`ONE`] if `self` is positive, including `+0.0` and [`INFINITY`]
-    /// * [`NEG_ONE`] if `self` is negative, including `-0.0` and [`NEG_INFINITY`]
+    /// * [`NEG_ONE`] if `self` is negative, including `-0.0` and
+    ///   [`NEG_INFINITY`]
     /// * [`NAN`] if `self` is [`NAN`]
     ///
     /// # Examples
@@ -218,23 +218,25 @@ impl Quad {
 
     /// Returns `self`'s floating point category.
     ///
-    /// The possible return values are the members of [`FpCategory`], as follows:
+    /// The possible return values are the members of [`FpCategory`], as
+    /// follows:
     ///
     /// * `FpCategory::Zero` if the number is $\pm0$;
     /// * `FpCategory::Infinite` if the number is $\pm\infin$;
     /// * `FpCategory::Nan` if the number is not a number;
-    /// * `FpCategory::Subnormal` if the number is $\pm$[`MIN_POSITIVE`] (numbers this small
-    ///     can be represented, but they lose some accuracy);
+    /// * `FpCategory::Subnormal` if the number is $\pm$[`MIN_POSITIVE`]
+    ///   (numbers this small can be represented, but they lose some accuracy);
     /// * `FpCategory::Normal` if the number is anything else.
     ///
-    /// A `Quad` can also register as `FpCategory::Subnormal` if it has a small enough
-    /// negative exponent that one of the other components of the number is a subnormal
-    /// number itself. This will typically happen around `1e-260` or so.
+    /// A `Quad` can also register as `FpCategory::Subnormal` if it has a small
+    /// enough negative exponent that one of the other components of the
+    /// number is a subnormal number itself. This will typically happen
+    /// around `1e-260` or so.
     ///
     /// # Examples
     /// ```
     /// # use qd::{qd, Quad};
-    /// use std::num::FpCategory;
+    /// use core::num::FpCategory;
     ///
     /// let num = qd!(12.4);
     /// let inf = Quad::INFINITY;
@@ -279,9 +281,7 @@ impl Quad {
     /// assert!(!lower.is_normal());
     /// ```
     #[inline]
-    pub fn is_normal(self) -> bool {
-        self.classify() == FpCategory::Normal
-    }
+    pub fn is_normal(self) -> bool { self.classify() == FpCategory::Normal }
 
     /// Returns `true` if `self` is either positive or negative zero.
     ///
@@ -293,12 +293,10 @@ impl Quad {
     /// assert!(!Quad::PI.is_zero());
     /// ```
     #[inline]
-    pub fn is_zero(self) -> bool {
-        self.0 == 0.0
-    }
+    pub fn is_zero(self) -> bool { self.0 == 0.0 }
 
-    /// Returns `true` if `self` is negative, including negative zero, negative infinity,
-    /// and `NaN` with a negative sign bit.
+    /// Returns `true` if `self` is negative, including negative zero, negative
+    /// infinity, and `NaN` with a negative sign bit.
     ///
     /// # Examples
     /// ```
@@ -310,12 +308,10 @@ impl Quad {
     /// assert!(!qd!(7.0).is_sign_negative());
     /// ```
     #[inline]
-    pub fn is_sign_negative(self) -> bool {
-        self.0.is_sign_negative()
-    }
+    pub fn is_sign_negative(self) -> bool { self.0.is_sign_negative() }
 
-    /// Returns `true` if `self` is positive, including positive zero, positive infinity and
-    /// `NaN` with a positive sign bit.
+    /// Returns `true` if `self` is positive, including positive zero, positive
+    /// infinity and `NaN` with a positive sign bit.
     ///
     /// # Examples
     /// ```
@@ -327,14 +323,12 @@ impl Quad {
     /// assert!(!qd!(-7.0).is_sign_positive());
     /// ```
     #[inline]
-    pub fn is_sign_positive(self) -> bool {
-        self.0.is_sign_positive()
-    }
+    pub fn is_sign_positive(self) -> bool { self.0.is_sign_positive() }
 
     /// Returns `true` if `self` is `NaN`.
     ///
-    /// This is the proper way to test for `NaN` because it cannot be done with an equality
-    /// test (since `NaN` is not equal to itself).
+    /// This is the proper way to test for `NaN` because it cannot be done with
+    /// an equality test (since `NaN` is not equal to itself).
     ///
     /// # Examples
     /// ```
@@ -343,9 +337,7 @@ impl Quad {
     /// assert!(!qd!(7.0).is_nan());
     /// ```
     #[inline]
-    pub fn is_nan(self) -> bool {
-        self.0.is_nan()
-    }
+    pub fn is_nan(self) -> bool { self.0.is_nan() }
 
     /// Returns `true` if `self` is positive or negative infinity.
     ///
@@ -358,9 +350,7 @@ impl Quad {
     /// assert!(!qd!(7.0).is_infinite());
     /// ```
     #[inline]
-    pub fn is_infinite(self) -> bool {
-        self.0.is_infinite()
-    }
+    pub fn is_infinite(self) -> bool { self.0.is_infinite() }
 
     /// Returns `true` if `self` is neither infinite nor `NaN`.
     ///
@@ -373,16 +363,16 @@ impl Quad {
     /// assert!(qd!(7.0).is_finite());
     /// ```
     #[inline]
-    pub fn is_finite(self) -> bool {
-        self.0.is_finite()
-    }
+    pub fn is_finite(self) -> bool { self.0.is_finite() }
 
-    /// Returns `true` if `self` has an absolute value of less than [`MIN_POSITIVE`].
+    /// Returns `true` if `self` has an absolute value of less than
+    /// [`MIN_POSITIVE`].
     ///
-    /// Numbers this small can be represented by floating point numbers, but they are not as
-    /// accurate. This inaccuracy is inherent in the IEEE-754 format for 64-bit numbers;
-    /// making a double-double out of an inaccurate number means the double-double is also
-    /// going to be inaccurate.
+    /// Numbers this small can be represented by floating point numbers, but
+    /// they are not as accurate. This inaccuracy is inherent in the
+    /// IEEE-754 format for 64-bit numbers; making a double-double out of an
+    /// inaccurate number means the double-double is also going to be
+    /// inaccurate.
     ///
     /// # Examples
     /// ```
@@ -393,15 +383,13 @@ impl Quad {
     ///
     /// [`MIN_POSITIVE`]: #associatedconstant.MIN_POSITIVE
     #[inline]
-    pub fn is_subnormal(self) -> bool {
-        self.classify() == FpCategory::Subnormal
-    }
+    pub fn is_subnormal(self) -> bool { self.classify() == FpCategory::Subnormal }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::num::FpCategory::*;
+    use core::num::FpCategory::*;
 
     // abs tests
     test_all_exact!(

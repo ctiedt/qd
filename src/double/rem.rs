@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 use crate::double::Double;
-use std::ops::{Rem, RemAssign};
+use core::ops::{Rem, RemAssign};
 
 impl Rem for Double {
     type Output = Double;

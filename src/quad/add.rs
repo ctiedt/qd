@@ -5,10 +5,11 @@
 
 use crate::common::utils as u;
 use crate::quad::Quad;
-use std::ops::{Add, AddAssign};
+use core::ops::{Add, AddAssign};
 
-// Utility function that returns the quad component with the specified index and then
-// increments the index. This is how we do `a[i++]` without the `++` operator.
+// Utility function that returns the quad component with the specified index and
+// then increments the index. This is how we do `a[i++]` without the `++`
+// operator.
 #[inline]
 fn index_and_inc(a: Quad, i: &mut usize) -> f64 {
     let r = a[*i];
@@ -19,12 +20,13 @@ fn index_and_inc(a: Quad, i: &mut usize) -> f64 {
 impl Add for Quad {
     type Output = Quad;
 
-    // This function is the real reason indexing was added to quads. Unlike multiplication,
-    // where every component has a specific function and appears in a specific place in the
-    // algorithm, addition is just a repeated iteration over each successive component.
+    // This function is the real reason indexing was added to quads. Unlike
+    // multiplication, where every component has a specific function and appears
+    // in a specific place in the algorithm, addition is just a repeated
+    // iteration over each successive component.
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
     /// This implements the `+` operator between two `Quad`s.
     ///
@@ -52,12 +54,12 @@ impl Add for Quad {
                 // in the `accumulate` call below, act as a merge sort. The largest
                 // component between the two quads is operated on first, then the second
                 // largest, and so on.
-                let u = if self[i].abs() > other[j].abs() {
+                let u = if libm::fabs(self[i]) > libm::fabs(other[j]) {
                     index_and_inc(self, &mut i)
                 } else {
                     index_and_inc(other, &mut j)
                 };
-                let v = if self[i].abs() > other[j].abs() {
+                let v = if libm::fabs(self[i]) > libm::fabs(other[j]) {
                     index_and_inc(self, &mut i)
                 } else {
                     index_and_inc(other, &mut j)
@@ -76,7 +78,7 @@ impl Add for Quad {
 
                     let t = if i >= 4 {
                         index_and_inc(other, &mut j)
-                    } else if j >= 4 || self[i].abs() > other[j].abs() {
+                    } else if j >= 4 || libm::fabs(self[i]) > libm::fabs(other[j]) {
                         index_and_inc(self, &mut i)
                     } else {
                         index_and_inc(other, &mut j)
@@ -108,8 +110,8 @@ impl Add for Quad {
 impl Add for &Quad {
     type Output = Quad;
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
     /// This implements the `+` operator between two references to `Quad`s.
     ///
@@ -123,18 +125,17 @@ impl Add for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn add(self, other: &Quad) -> Quad {
-        (*self).add(*other)
-    }
+    fn add(self, other: &Quad) -> Quad { (*self).add(*other) }
 }
 
 impl Add<&Quad> for Quad {
     type Output = Quad;
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
-    /// This implements the `+` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `+` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -146,18 +147,17 @@ impl Add<&Quad> for Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn add(self, other: &Quad) -> Quad {
-        self.add(*other)
-    }
+    fn add(self, other: &Quad) -> Quad { self.add(*other) }
 }
 
 impl Add<Quad> for &Quad {
     type Output = Quad;
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
-    /// This implements the `+` operator between a reference to a `Quad` and a `Quad`.
+    /// This implements the `+` operator between a reference to a `Quad` and a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -169,14 +169,12 @@ impl Add<Quad> for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn add(self, other: Quad) -> Quad {
-        (*self).add(other)
-    }
+    fn add(self, other: Quad) -> Quad { (*self).add(other) }
 }
 
 impl AddAssign for Quad {
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
     /// This implements the `+=` operator between two `Quad`s.
     ///
@@ -201,10 +199,11 @@ impl AddAssign for Quad {
 }
 
 impl AddAssign<&Quad> for Quad {
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
-    /// This implements the `+=` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `+=` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -229,12 +228,13 @@ impl AddAssign<&Quad> for Quad {
 impl Quad {
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_add(&self, other: &Quad) -> Option<Quad> {
@@ -364,8 +364,8 @@ mod tests {
             Quad::NAN + Quad::NAN;
     );
 
-    // Assign tests. Assign code delegates to add code, so there's no need to re-test all
-    // of the cases above.
+    // Assign tests. Assign code delegates to add code, so there's no need to
+    // re-test all of the cases above.
     test_all!(
         assign_num: {
             let mut a = Quad::PI;

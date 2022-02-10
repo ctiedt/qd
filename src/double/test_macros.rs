@@ -14,7 +14,7 @@ macro_rules! prec {
         };
         let epsilon = Double(10.0, 0.0).powi(mag - $digits);
         let diff = (expected - actual).abs();
-        let message = format!(
+        let message = alloc::format!(
             concat!(
                 "\n",
                 "Expected: {0}\n",
@@ -27,9 +27,16 @@ macro_rules! prec {
                 "  Expected: {4:<22e} {5:e}\n",
                 "  Actual:   {6:<22e} {7:e}\n",
             ),
-            expected, actual, diff, epsilon, expected[0], expected[1], actual[0], actual[1]
+            expected,
+            actual,
+            diff,
+            epsilon,
+            expected[0],
+            expected[1],
+            actual[0],
+            actual[1]
         );
-        assert!(diff < epsilon, message);
+        assert!(diff < epsilon, &message);
     };
 }
 
@@ -43,7 +50,7 @@ macro_rules! exact {
     ($expected:expr, $actual:expr $(,)?) => {
         let expected = Double::from($expected);
         let actual = Double::from($actual);
-        let message = format!(
+        let message = alloc::format!(
             concat!(
                 "\n",
                 "Expected: {0}\n",
@@ -53,12 +60,17 @@ macro_rules! exact {
                 "  Expected: {2:<22e} {3:e}\n",
                 "  Actual:   {4:<22e} {5:e}\n",
             ),
-            expected, actual, expected[0], expected[1], actual[0], actual[1]
+            expected,
+            actual,
+            expected[0],
+            expected[1],
+            actual[0],
+            actual[1]
         );
         if expected.is_nan() {
-            assert!(actual.is_nan(), message);
+            assert!(actual.is_nan(), &message);
         } else {
-            assert!(expected == actual, message);
+            assert!(expected == actual, &message);
         };
     };
 }

@@ -4,16 +4,17 @@
 // https://opensource.org/licenses/MIT
 
 use crate::quad::Quad;
-use std::ops::{Rem, RemAssign};
+use core::ops::{Rem, RemAssign};
 
 impl Rem for Quad {
     type Output = Quad;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Quad` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Quad` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
     /// This implements the `%` operator between two `Quad`s.
     ///
@@ -39,19 +40,18 @@ impl Rem for Quad {
     /// assert!(delta_z < qd!(1e-60));
     /// ```
     #[inline]
-    fn rem(self, other: Quad) -> Quad {
-        self - other * (self / other).trunc()
-    }
+    fn rem(self, other: Quad) -> Quad { self - other * (self / other).trunc() }
 }
 
 impl Rem for &Quad {
     type Output = Quad;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Quad` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Quad` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
     /// This implements the `%` operator between two references to `Quad`s.
     ///
@@ -77,21 +77,21 @@ impl Rem for &Quad {
     /// assert!(delta_z < qd!(1e-60));
     /// ```
     #[inline]
-    fn rem(self, other: &Quad) -> Quad {
-        *self % *other
-    }
+    fn rem(self, other: &Quad) -> Quad { *self % *other }
 }
 
 impl Rem<&Quad> for Quad {
     type Output = Quad;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Quad` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Quad` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
-    /// This implements the `%` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `%` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -115,21 +115,21 @@ impl Rem<&Quad> for Quad {
     /// assert!(delta_z < qd!(1e-60));
     /// ```
     #[inline]
-    fn rem(self, other: &Quad) -> Quad {
-        self % *other
-    }
+    fn rem(self, other: &Quad) -> Quad { self % *other }
 }
 
 impl Rem<Quad> for &Quad {
     type Output = Quad;
 
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// producing a new `Quad` as the result.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, producing a new `Quad` as the result.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
-    /// This implements the `%` operator between a reference to a `Quad` and a `Quad`.
+    /// This implements the `%` operator between a reference to a `Quad` and a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -153,17 +153,16 @@ impl Rem<Quad> for &Quad {
     /// assert!(delta_z < qd!(1e-60));
     /// ```
     #[inline]
-    fn rem(self, other: Quad) -> Quad {
-        *self % other
-    }
+    fn rem(self, other: Quad) -> Quad { *self % other }
 }
 
 impl RemAssign for Quad {
-    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the argument,
-    /// assigning the result to `self`.
+    /// Computes the remainder of $x \div y$, where $x$ is `self` and $y$ is the
+    /// argument, assigning the result to `self`.
     ///
-    /// The result is given the same sign as the dividend (`self`), no matter the sign of
-    /// the divisor. This is consistent with the way `f64` behaves.
+    /// The result is given the same sign as the dividend (`self`), no matter
+    /// the sign of the divisor. This is consistent with the way `f64`
+    /// behaves.
     ///
     /// This implements the `%=` operator between two `Quad`s.
     ///
@@ -202,10 +201,11 @@ impl RemAssign for Quad {
 }
 
 impl RemAssign<&Quad> for Quad {
-    /// Divides this `Quad` by a reference to another, modifying this one to equal the
-    /// remainder. This operation uses floored division.
+    /// Divides this `Quad` by a reference to another, modifying this one to
+    /// equal the remainder. This operation uses floored division.
     ///
-    /// This implements the `%=` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `%=` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```

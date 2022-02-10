@@ -6,14 +6,14 @@
 use crate::common::primitive as p;
 use crate::common::utils as u;
 use crate::double::Double;
-use std::ops::{Sub, SubAssign};
+use core::ops::{Sub, SubAssign};
 
 #[allow(clippy::suspicious_arithmetic_impl)]
 impl Sub for Double {
     type Output = Double;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
     /// This implements the binary `-` operator between two `Double`s.
     ///
@@ -43,10 +43,11 @@ impl Sub for Double {
 impl Sub for &Double {
     type Output = Double;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
-    /// This implements the binary `-` operator between two references to `Double`s.
+    /// This implements the binary `-` operator between two references to
+    /// `Double`s.
     ///
     /// # Examples
     /// ```
@@ -58,19 +59,17 @@ impl Sub for &Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn sub(self, other: &Double) -> Double {
-        (*self).sub(*other)
-    }
+    fn sub(self, other: &Double) -> Double { (*self).sub(*other) }
 }
 
 impl Sub<&Double> for Double {
     type Output = Double;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
-    /// This implements the binary `-` operator between a `Double` and a reference to a
-    /// `Double`.
+    /// This implements the binary `-` operator between a `Double` and a
+    /// reference to a `Double`.
     ///
     /// # Examples
     /// ```
@@ -82,19 +81,17 @@ impl Sub<&Double> for Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn sub(self, other: &Double) -> Double {
-        self.sub(*other)
-    }
+    fn sub(self, other: &Double) -> Double { self.sub(*other) }
 }
 
 impl Sub<Double> for &Double {
     type Output = Double;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
-    /// This implements the binary `-` operator between a reference to a `Double` and a
-    /// `Double`.
+    /// This implements the binary `-` operator between a reference to a
+    /// `Double` and a `Double`.
     ///
     /// # Examples
     /// ```
@@ -106,14 +103,12 @@ impl Sub<Double> for &Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn sub(self, other: Double) -> Double {
-        (*self).sub(other)
-    }
+    fn sub(self, other: Double) -> Double { (*self).sub(other) }
 }
 
 impl SubAssign for Double {
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
     /// This implements the `-=` operator between two `Double`s.
     ///
@@ -136,10 +131,11 @@ impl SubAssign for Double {
 }
 
 impl SubAssign<&Double> for Double {
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
-    /// This implements the `-=` operator between a `Double` and a reference to a `Double`.
+    /// This implements the `-=` operator between a `Double` and a reference to
+    /// a `Double`.
     ///
     /// # Examples
     /// ```
@@ -162,12 +158,13 @@ impl SubAssign<&Double> for Double {
 impl Double {
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_sub(&self, other: &Double) -> Option<Double> {
@@ -295,8 +292,8 @@ mod tests {
             Double::NEG_INFINITY - Double::NEG_INFINITY;
     );
 
-    // Assign tests. Assign code delegates to sub code, so there's no need to re-test all
-    // of the cases above.
+    // Assign tests. Assign code delegates to sub code, so there's no need to
+    // re-test all of the cases above.
     test_all!(
         assign_num: {
             let mut a = Double::PI;

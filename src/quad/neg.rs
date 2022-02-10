@@ -4,12 +4,13 @@
 // https://opensource.org/licenses/MIT
 
 use crate::quad::Quad;
-use std::ops::Neg;
+use core::ops::Neg;
 
 impl Neg for Quad {
     type Output = Quad;
 
-    /// Computes $-x$, where $x$ is `self`, producing a new `Quad` as the result.
+    /// Computes $-x$, where $x$ is `self`, producing a new `Quad` as the
+    /// result.
     ///
     /// This implements the unary `-` operator for `Quad`s.
     ///
@@ -23,15 +24,14 @@ impl Neg for Quad {
     /// assert!(x < qd!(1e-60));
     /// ```
     #[inline]
-    fn neg(self) -> Quad {
-        Quad(-self.0, -self.1, -self.2, -self.3)
-    }
+    fn neg(self) -> Quad { Quad(-self.0, -self.1, -self.2, -self.3) }
 }
 
 impl Neg for &Quad {
     type Output = Quad;
 
-    /// Computes $-x$, where $x$ is `self`, producing a new `Quad` as the result.
+    /// Computes $-x$, where $x$ is `self`, producing a new `Quad` as the
+    /// result.
     ///
     /// This implements the unary `-` operator for references to `Quad`s.
     ///
@@ -45,9 +45,7 @@ impl Neg for &Quad {
     /// assert!(x < qd!(1e-60));
     /// ```
     #[inline]
-    fn neg(self) -> Quad {
-        Quad(-(*self).0, -(*self).1, -(*self).2, -(*self).3)
-    }
+    fn neg(self) -> Quad { Quad(-(*self).0, -(*self).1, -(*self).2, -(*self).3) }
 }
 
 #[cfg(test)]

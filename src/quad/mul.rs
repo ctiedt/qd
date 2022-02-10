@@ -6,16 +6,16 @@
 use crate::common::primitive as p;
 use crate::common::utils as u;
 use crate::quad::Quad;
-use std::ops::{Mul, MulAssign};
+use core::ops::{Mul, MulAssign};
 
 impl Mul for Quad {
     type Output = Quad;
 
     // This is complicated.
     //
-    // It closely follows the process described on pp. 11-16 of "Library for Double-Double
-    // and  Quad-Double Arithmetic" by Y. Hida, X.S. Li, and D.H. Bailey which can be found
-    // at http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf. You
+    // It closely follows the process described on pp. 11-16 of "Library for
+    // Double-Double and  Quad-Double Arithmetic" by Y. Hida, X.S. Li, and D.H.
+    // Bailey which can be found at http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf. You
     // should be able to see the way the source code works from the diagrams there.
     //
     // TERMS (a = self, b = other):
@@ -34,11 +34,12 @@ impl Mul for Quad {
     //         a2 * b2      b  (high word only)
     //         a3 * b1      c  (high word only)
     //
-    // Other terms, including the remaining O(ε⁴) terms and the low words of the O(ε⁴) that
-    // are calculated, are not necessary to provide 212 bits of accuracy.
+    // Other terms, including the remaining O(ε⁴) terms and the low words of the
+    // O(ε⁴) that are calculated, are not necessary to provide 212 bits of
+    // accuracy.
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
     /// This implements the `*` operator between two `Quad`s.
     ///
@@ -105,8 +106,8 @@ impl Mul for Quad {
 impl Mul for &Quad {
     type Output = Quad;
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
     /// This implements the `*` operator between two references to `Quad`s.
     ///
@@ -120,18 +121,17 @@ impl Mul for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn mul(self, other: &Quad) -> Quad {
-        (*self).mul(*other)
-    }
+    fn mul(self, other: &Quad) -> Quad { (*self).mul(*other) }
 }
 
 impl Mul<&Quad> for Quad {
     type Output = Quad;
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
-    /// This implements the `*` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `*` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -143,18 +143,17 @@ impl Mul<&Quad> for Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn mul(self, other: &Quad) -> Quad {
-        self.mul(*other)
-    }
+    fn mul(self, other: &Quad) -> Quad { self.mul(*other) }
 }
 
 impl Mul<Quad> for &Quad {
     type Output = Quad;
 
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
-    /// This implements the `*` operator between a reference to a `Quad` and a `Quad`.
+    /// This implements the `*` operator between a reference to a `Quad` and a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -166,14 +165,12 @@ impl Mul<Quad> for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn mul(self, other: Quad) -> Quad {
-        (*self).mul(other)
-    }
+    fn mul(self, other: Quad) -> Quad { (*self).mul(other) }
 }
 
 impl MulAssign for Quad {
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, assigning the
-    /// result to `self`.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// assigning the result to `self`.
     ///
     /// This implements the `*=` operator between two `Quad`s.
     ///
@@ -198,10 +195,11 @@ impl MulAssign for Quad {
 }
 
 impl MulAssign<&Quad> for Quad {
-    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument, assigning the
-    /// result to `self`.
+    /// Computes $x \times y$, where $x$ is `self` and $y$ is the argument,
+    /// assigning the result to `self`.
     ///
-    /// This implements the `*=` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `*=` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -226,12 +224,13 @@ impl MulAssign<&Quad> for Quad {
 impl Quad {
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_mul(&self, other: &Quad) -> Option<Quad> {
@@ -370,8 +369,8 @@ mod tests {
             Quad::ONE * Quad::NAN;
     );
 
-    // Assign tests. Assign code delegates to mul code, so there's no need to re-test all
-    // of the cases above.
+    // Assign tests. Assign code delegates to mul code, so there's no need to
+    // re-test all of the cases above.
     test_all!(
         assign_num: {
             let mut a = Quad::PI;

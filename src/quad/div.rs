@@ -6,16 +6,16 @@
 use crate::common::primitive as p;
 use crate::common::utils as u;
 use crate::quad::Quad;
-use std::ops::{Div, DivAssign};
+use core::ops::{Div, DivAssign};
 
-// Quad x f64 analogue of full quad x quad multiplication above. This is here because we
-// don't want to depend on any Quad::from(x), where x is a single f64 (i.e., a non-tuple),
-// in arithmetic. Doing so will create infinite loops because arithmetic is used to parse
-// the f64s into quads in the first place. Multiplying the f64s directly into Quads bypasses
-// this.
+// Quad x f64 analogue of full quad x quad multiplication above. This is here
+// because we don't want to depend on any Quad::from(x), where x is a single f64
+// (i.e., a non-tuple), in arithmetic. Doing so will create infinite loops
+// because arithmetic is used to parse the f64s into quads in the first place.
+// Multiplying the f64s directly into Quads bypasses this.
 //
-// Division is the only place where this is necessary, so this multiplication function is
-// dropped nearby.
+// Division is the only place where this is necessary, so this multiplication
+// function is dropped nearby.
 #[inline]
 fn mul_f64(a: Quad, b: f64) -> Quad {
     let (h0, l0) = p::two_prod(a.0, b);
@@ -36,8 +36,8 @@ fn mul_f64(a: Quad, b: f64) -> Quad {
 impl Div for Quad {
     type Output = Quad;
 
-    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
     /// This implements the `/` operator between two `Quad`s.
     ///
@@ -86,8 +86,8 @@ impl Div for Quad {
 impl Div for &Quad {
     type Output = Quad;
 
-    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
     /// This implements the `/` operator between two references to `Quad`s.
     ///
@@ -101,18 +101,17 @@ impl Div for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn div(self, other: &Quad) -> Quad {
-        (*self).div(*other)
-    }
+    fn div(self, other: &Quad) -> Quad { (*self).div(*other) }
 }
 
 impl Div<&Quad> for Quad {
     type Output = Quad;
 
-    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
-    /// This implements the `/` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `/` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -124,18 +123,17 @@ impl Div<&Quad> for Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn div(self, other: &Quad) -> Quad {
-        self.div(*other)
-    }
+    fn div(self, other: &Quad) -> Quad { self.div(*other) }
 }
 
 impl Div<Quad> for &Quad {
     type Output = Quad;
 
-    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument,
+    /// producing a new `Quad` as the result.
     ///
-    /// This implements the `/` operator between a reference to a `Quad` and a `Quad`.
+    /// This implements the `/` operator between a reference to a `Quad` and a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -147,14 +145,12 @@ impl Div<Quad> for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn div(self, other: Quad) -> Quad {
-        (*self).div(other)
-    }
+    fn div(self, other: Quad) -> Quad { (*self).div(other) }
 }
 
 impl DivAssign for Quad {
-    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument, assigning the
-    /// result to `self`.
+    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument,
+    /// assigning the result to `self`.
     ///
     /// This implements the `/=` operator between two `Quad`s.
     ///
@@ -179,8 +175,8 @@ impl DivAssign for Quad {
 }
 
 impl DivAssign<&Quad> for Quad {
-    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument, assigning the
-    /// result to `self`.
+    /// Computes $x \div y$, where $x$ is `self` and $y$ is the argument,
+    /// assigning the result to `self`.
     ///
     /// This implements the `/=` operator between two `Quad`s.
     ///
@@ -207,12 +203,13 @@ impl DivAssign<&Quad> for Quad {
 impl Quad {
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_div(&self, other: &Quad) -> Option<Quad> {
@@ -360,8 +357,8 @@ mod tests {
             Quad::ONE / Quad::NAN;
     );
 
-    // Assign tests. Assign code delegates to div code, so there's no need to re-test all
-    // of the cases above.
+    // Assign tests. Assign code delegates to div code, so there's no need to
+    // re-test all of the cases above.
     test_all!(
         assign_num: {
             let mut a = Quad::PI;

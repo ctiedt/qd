@@ -4,13 +4,13 @@
 // https://opensource.org/licenses/MIT
 
 use crate::quad::Quad;
-use std::ops::{Add, Sub, SubAssign};
+use core::ops::{Add, Sub, SubAssign};
 
 impl Sub for Quad {
     type Output = Quad;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
     /// This implements the binary `-` operator between two `Quad`s.
     ///
@@ -24,18 +24,17 @@ impl Sub for Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn sub(self, other: Quad) -> Quad {
-        self.add(-other)
-    }
+    fn sub(self, other: Quad) -> Quad { self.add(-other) }
 }
 
 impl Sub for &Quad {
     type Output = Quad;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
-    /// This implements the binary `-` operator between two references to `Quad`s.
+    /// This implements the binary `-` operator between two references to
+    /// `Quad`s.
     ///
     /// # Examples
     /// ```
@@ -47,19 +46,17 @@ impl Sub for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn sub(self, other: &Quad) -> Quad {
-        (*self).add(-*other)
-    }
+    fn sub(self, other: &Quad) -> Quad { (*self).add(-*other) }
 }
 
 impl Sub<&Quad> for Quad {
     type Output = Quad;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
-    /// This implements the binary `-` operator between a `Quad` and a reference to a
-    /// `Quad`.
+    /// This implements the binary `-` operator between a `Quad` and a reference
+    /// to a `Quad`.
     ///
     /// # Examples
     /// ```
@@ -71,19 +68,17 @@ impl Sub<&Quad> for Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn sub(self, other: &Quad) -> Quad {
-        self.add(-*other)
-    }
+    fn sub(self, other: &Quad) -> Quad { self.add(-*other) }
 }
 
 impl Sub<Quad> for &Quad {
     type Output = Quad;
 
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Quad` as the result.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Quad` as the result.
     ///
-    /// This implements the binary `-` operator between a reference to a `Quad` and a
-    /// `Quad`.
+    /// This implements the binary `-` operator between a reference to a `Quad`
+    /// and a `Quad`.
     ///
     /// # Examples
     /// ```
@@ -95,14 +90,12 @@ impl Sub<Quad> for &Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    fn sub(self, other: Quad) -> Quad {
-        (*self).add(-other)
-    }
+    fn sub(self, other: Quad) -> Quad { (*self).add(-other) }
 }
 
 impl SubAssign for Quad {
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
     /// This implements the `-=` operator between two `Quad`s.
     ///
@@ -127,10 +120,11 @@ impl SubAssign for Quad {
 }
 
 impl SubAssign<&Quad> for Quad {
-    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x - y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
-    /// This implements the `-=` operator between a `Quad` and a reference to a `Quad`.
+    /// This implements the `-=` operator between a `Quad` and a reference to a
+    /// `Quad`.
     ///
     /// # Examples
     /// ```
@@ -244,8 +238,8 @@ mod tests {
             Quad::NEG_INFINITY - Quad::NEG_INFINITY;
     );
 
-    // Assign tests. Assign code delegates to sub code, so there's no need to re-test all
-    // of the cases above.
+    // Assign tests. Assign code delegates to sub code, so there's no need to
+    // re-test all of the cases above.
     test_all!(
         assign_num: {
             let mut a = Quad::PI;

@@ -6,7 +6,7 @@
 use crate::common::primitive as p;
 use crate::common::utils as u;
 use crate::double::Double;
-use std::ops::{Div, DivAssign};
+use core::ops::{Div, DivAssign};
 
 // Helper function needed to avoid the only place in this arithmetic where Double::from must
 // be called on a non-tuple, non-integer number. With the current parsing of floats, calling

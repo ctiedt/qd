@@ -9,7 +9,7 @@
 // https://opensource.org/licenses/MIT
 
 use crate::double::Double;
-use std::cmp::Ordering;
+use core::cmp::Ordering;
 
 impl PartialEq for Double {
     /// Calculates whether `self` and the argument are equal to one another.

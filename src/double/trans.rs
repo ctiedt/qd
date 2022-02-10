@@ -9,22 +9,23 @@ use crate::double::Double;
 // used for reduction in exp, expm1; value is 1/512
 const FRAC_1_512: f64 = 0.001953125;
 
-// values with an absolute value higher than this will use ln instead of ln1p; the value
-// here is ln(2) / 64
+// values with an absolute value higher than this will use ln instead of ln1p;
+// the value here is ln(2) / 64
 const LN1P_LIMIT: Double = Double(1.0830424696249145e-2, 3.6235106466348455e-19);
 
 impl Double {
     /// Computes the exponential function, $e^x$, where $x$ is `self`.
     ///
-    /// The result of this function grows rapidly. Once $x$ exceeds 708, the result is too
-    /// large to represent with a `Double`; at that point the function begins to return
-    /// [`INFINITY`]. The limit on the low end is less due to the fact that the second
-    /// component needs to fit in an `f64` rather than the first, along with extra bits used
-    /// in argument reduction; this function begins to return 0 at -600.
+    /// The result of this function grows rapidly. Once $x$ exceeds 708, the
+    /// result is too large to represent with a `Double`; at that point the
+    /// function begins to return [`INFINITY`]. The limit on the low end is
+    /// less due to the fact that the second component needs to fit in an
+    /// `f64` rather than the first, along with extra bits used in argument
+    /// reduction; this function begins to return 0 at -600.
     ///
-    /// As $x$ grows this function does lose a bit of precision. It's precise to at least 30
-    /// digits up to values of $-140 \le x \le 150$, and from then until the limits, it's
-    /// precise to at least 29 digits.
+    /// As $x$ grows this function does lose a bit of precision. It's precise to
+    /// at least 30 digits up to values of $-140 \le x \le 150$, and from
+    /// then until the limits, it's precise to at least 29 digits.
     ///
     /// # Examples
     /// ```
@@ -91,7 +92,7 @@ impl Double {
                 // The implementation of equation (3). Since k is going to be an integer
                 // anyway and doesn't therefore require Double precision, we use regular f64
                 // arithmetic.
-                let k = (self.0 / Double::LN_2.0 + 0.5).floor();
+                let k = libm::floor(self.0 / Double::LN_2.0 + 0.5);
 
                 // The implementation of equation (4). We actually go further here by
                 // halving the answer 9 more times (FRAC_1_512 is (1/2)^9), using the
@@ -145,24 +146,29 @@ impl Double {
         }
     }
 
-    /// Computes the exponential function of $x$ minus 1, $e^x - 1$, where $x$ is `self`.
+    /// Computes the exponential function of $x$ minus 1, $e^x - 1$, where $x$
+    /// is `self`.
     ///
-    /// While this function literally calculates the value returned by [`exp`] minus 1, it
-    /// does this directly (rather than computing [`exp`] directly and then subtracting 1
-    /// from the answer). This is useful in the not-infrequent case where $x$ is very close
-    /// to 0 and you have to subtract something near 1 from the answer (another example is
-    /// `x.exp() - x.cos()` &mdash; for very small values of `x`, `x.cos()` is also very
-    /// near 1). Since `x.exp()` is very close to 1 when `x` is very close to 0, this is
-    /// subtracting something very close to 1 from something else very close to 1.
+    /// While this function literally calculates the value returned by [`exp`]
+    /// minus 1, it does this directly (rather than computing [`exp`]
+    /// directly and then subtracting 1 from the answer). This is useful in
+    /// the not-infrequent case where $x$ is very close to 0 and you have to
+    /// subtract something near 1 from the answer (another example is
+    /// `x.exp() - x.cos()` &mdash; for very small values of `x`, `x.cos()` is
+    /// also very near 1). Since `x.exp()` is very close to 1 when `x` is
+    /// very close to 0, this is subtracting something very close to 1 from
+    /// something else very close to 1.
     ///
     /// When this happens, subtracting 1 from [`exp`] suffers from [catastrophic
-    /// cancellation], a condition in which subtracting two numbers that are very close to
-    /// each other can result in a huge loss of accuracy. Since `expm1` does not perform
-    /// this subtraction but instead computes *e*<sup>x</sup> - 1 directly, it does not
-    /// suffer from this phenomenon.
+    /// cancellation], a condition in which subtracting two numbers that are
+    /// very close to each other can result in a huge loss of accuracy.
+    /// Since `expm1` does not perform this subtraction but instead computes
+    /// *e*<sup>x</sup> - 1 directly, it does not suffer from this
+    /// phenomenon.
     ///
-    /// This function will work over the same range as [`exp`], but `x.expm1() + 1` has no
-    /// advantage over `x.exp()`. It's for that one very particular purpose.
+    /// This function will work over the same range as [`exp`], but `x.expm1() +
+    /// 1` has no advantage over `x.exp()`. It's for that one very
+    /// particular purpose.
     ///
     /// # Examples
     /// ```
@@ -224,7 +230,7 @@ impl Double {
 
                 let eps = c::mul_pwr2(Double::EPSILON, FRAC_1_512);
 
-                let k = (self.0 / Double::LN_2.0 + 0.5).floor();
+                let k = libm::floor(self.0 / Double::LN_2.0 + 0.5);
                 let r = c::mul_pwr2(self - Double(k, 0.0) * Double::LN_2, FRAC_1_512);
 
                 let mut p = r.sqr();
@@ -275,18 +281,19 @@ impl Double {
         }
     }
 
-    /// Calculates the base-$e$ (natural) logarithm of $x$, $\ln x$ or $\log_e x$, where $x$
-    /// is `self`.
+    /// Calculates the base-$e$ (natural) logarithm of $x$, $\ln x$ or $\log_e
+    /// x$, where $x$ is `self`.
     ///
-    /// This calculation relies upon the [`exp`] calculation, in the opposite direction. A
-    /// large positive logarithm, for example, will require the calculation of a large
-    /// negative exponential.
+    /// This calculation relies upon the [`exp`] calculation, in the opposite
+    /// direction. A large positive logarithm, for example, will require the
+    /// calculation of a large negative exponential.
     ///
-    /// For the same reasons that negative values of [`exp`] are limited to -600, the
-    /// accurate results of this function are limited to the number whose logarithm is 600,
-    /// which is around `2.65e261`. Take care with this; unlike in [`exp`], [`INFINITY`] is
-    /// *not* returned. In that function, exceeding the maximum refers to actually
-    /// overflowing an `f64`, which is appropriate to call [`INFINITY`]; here, it means
+    /// For the same reasons that negative values of [`exp`] are limited to
+    /// -600, the accurate results of this function are limited to the
+    /// number whose logarithm is 600, which is around `2.65e261`. Take care
+    /// with this; unlike in [`exp`], [`INFINITY`] is *not* returned. In
+    /// that function, exceeding the maximum refers to actually overflowing
+    /// an `f64`, which is appropriate to call [`INFINITY`]; here, it means
     /// `601`.
     ///
     /// # Examples
@@ -323,10 +330,10 @@ impl Double {
                 //
                 // Because the derivative of exp(x) is exp(x), this is perhaps the simplest
                 // of all Newton iterations.
-                let mut x = Double(self.0.ln(), 0.0); // initial approximation
+                let mut x = Double(libm::log(self.0), 0.0); // initial approximation
 
-                let k = x.0.abs().log2().floor() as i32;
-                let eps = c::mul_pwr2(Double::EPSILON, 2f64.powi(k + 2));
+                let k = libm::floor(libm::log2(libm::fabs(x.0))) as i32;
+                let eps = c::mul_pwr2(Double::EPSILON, libm::pow(2.0, (k + 2) as f64));
 
                 let mut i = 0;
                 loop {
@@ -341,26 +348,29 @@ impl Double {
         }
     }
 
-    /// Calculates the base-$e$ (natural) logarithm of 1 plus $x$, $\ln (1 + x)$ or $\log_e
-    /// (1 + x)$, where $x$ is `self`.
+    /// Calculates the base-$e$ (natural) logarithm of 1 plus $x$, $\ln (1 + x)$
+    /// or $\log_e (1 + x)$, where $x$ is `self`.
     ///
-    /// This is the inverse of [`expm1`] and arises from the same sorts of concerns. It
-    /// isn't unusual to want to take logarithms of numbers very near 1, as the logarithm
-    /// approaches 0 at that point. However, with finite-precision mathematics, the `1`
-    /// itself severely limits the precision possible; the number `1.000000000000001` has 16
-    /// digits of precision, but most of them are taken up by placeholder zeros when we
+    /// This is the inverse of [`expm1`] and arises from the same sorts of
+    /// concerns. It isn't unusual to want to take logarithms of numbers
+    /// very near 1, as the logarithm approaches 0 at that point. However,
+    /// with finite-precision mathematics, the `1` itself severely limits
+    /// the precision possible; the number `1.000000000000001` has 16 digits
+    /// of precision, but most of them are taken up by placeholder zeros when we
     /// would prefer to have that precision available after the final `1`.
     ///
-    /// `ln1p` allows that by letting the user pass in a number near 0 and having the
-    /// algorithm add 1 to it internally, without causing the loss of precision. For
-    /// example, the same 16-digit number above could be passed into `ln1p` as
-    /// `0.000000000000001`, a number with *one* digit of precision, leaving 15 more digits
-    /// of precision availble after that final `1`.
+    /// `ln1p` allows that by letting the user pass in a number near 0 and
+    /// having the algorithm add 1 to it internally, without causing the
+    /// loss of precision. For example, the same 16-digit number above could
+    /// be passed into `ln1p` as `0.000000000000001`, a number with *one*
+    /// digit of precision, leaving 15 more digits of precision availble
+    /// after that final `1`.
     ///
-    /// The algorithm for logarithms close to 1 is slower than that for the general
-    /// logarithm, so this function delegates to [`ln`] if it can be done without losing
-    /// precision. There is no advantage to using `ln1p` over [`ln`] except for computing
-    /// logarithms of numbers very close to 1.
+    /// The algorithm for logarithms close to 1 is slower than that for the
+    /// general logarithm, so this function delegates to [`ln`] if it can be
+    /// done without losing precision. There is no advantage to using `ln1p`
+    /// over [`ln`] except for computing logarithms of numbers very close to
+    /// 1.
     ///
     /// # Examples
     /// ```
@@ -412,8 +422,8 @@ impl Double {
                 // about 14 terms of the series are needed. This is much higher than for
                 // `exp` and `expm1` but isn't too unreasonable.
 
-                let k = self.0.abs().log2().floor() as i32;
-                let eps = c::mul_pwr2(Double::EPSILON, 2f64.powi(k + 2));
+                let k = libm::floor(libm::log2(libm::fabs(self.0))) as i32;
+                let eps = c::mul_pwr2(Double::EPSILON, libm::pow(2.0, (k + 2) as f64));
 
                 let mut p = self.sqr();
                 let mut s = self - c::mul_pwr2(p, 0.5);
@@ -437,12 +447,14 @@ impl Double {
         }
     }
 
-    /// Calculates the base-10 logarithm of $x$, $\log_{10} x$, where $x$ is `self`.
+    /// Calculates the base-10 logarithm of $x$, $\log_{10} x$, where $x$ is
+    /// `self`.
     ///
-    /// As with [`ln`], this has an upper usable range less than the size of the numbers
-    /// themselves. In this case, that upper limit is around `1e261`. Over this number, the
-    /// output is not reliable, but it does not return [`INFINITY`] because the number 261
-    /// is so plainly not infinite.
+    /// As with [`ln`], this has an upper usable range less than the size of the
+    /// numbers themselves. In this case, that upper limit is around
+    /// `1e261`. Over this number, the output is not reliable, but it does
+    /// not return [`INFINITY`] because the number 261 is so plainly not
+    /// infinite.
     ///
     /// # Examples
     /// ```
@@ -457,15 +469,13 @@ impl Double {
     /// [`INFINITY`]: #associatedconstant.INFINITY
     /// [`ln`]: #method.ln
     #[inline]
-    pub fn log10(self) -> Double {
-        self.ln() / Double::LN_10
-    }
+    pub fn log10(self) -> Double { self.ln() / Double::LN_10 }
 
     /// Calculates the base-2 logarithm of $x$, $\log_2 x$, where $x$ is `self`.
     ///
-    /// Since 2 is smaller than $e$, this function is constrained even more than [`ln`]. It
-    /// will start returning [`NEG_INFINITY`] at around `1e-213` and will start to fail on
-    /// the positive side at around `2.6e180`.
+    /// Since 2 is smaller than $e$, this function is constrained even more than
+    /// [`ln`]. It will start returning [`NEG_INFINITY`] at around `1e-213`
+    /// and will start to fail on the positive side at around `2.6e180`.
     ///
     /// # Examples
     /// ```
@@ -480,19 +490,18 @@ impl Double {
     /// [`ln`]: #method.ln
     /// [`NEG_INFINITY`]: #associatedconstant.NEG_INFINITY
     #[inline]
-    pub fn log2(self) -> Double {
-        self.ln() / Double::LN_2
-    }
+    pub fn log2(self) -> Double { self.ln() / Double::LN_2 }
 
-    /// Calculates the base-$b$ logarithm of $x$, $\log_b x$, where $x$ is `self` and $b$ is
-    /// the argument.
+    /// Calculates the base-$b$ logarithm of $x$, $\log_b x$, where $x$ is
+    /// `self` and $b$ is the argument.
     ///
-    /// This function will have limits at extreme arguments like the other logarithm
-    /// functions. The difference is that those limits will depend on the base argument.
+    /// This function will have limits at extreme arguments like the other
+    /// logarithm functions. The difference is that those limits will depend
+    /// on the base argument.
     ///
-    /// If the goal is to calculate the base-$e$, base-2, or base-10 logarithms of $x$, the
-    /// specialized functions for those purposes ([`ln`], [`log2`], and [`log10`]
-    /// respectively) will be more efficient.
+    /// If the goal is to calculate the base-$e$, base-2, or base-10 logarithms
+    /// of $x$, the specialized functions for those purposes ([`ln`],
+    /// [`log2`], and [`log10`] respectively) will be more efficient.
     ///
     /// # Examples
     /// ```
@@ -517,12 +526,13 @@ impl Double {
 
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_exp(&self) -> Option<Double> {
@@ -818,8 +828,8 @@ mod tests {
 
     // tests for the relevant bits of the difference between exp and expm1.
     //
-    // Because of catastrophic cancellation, this is the highest precision that exp() - 1
-    // will work for. expm1 on the same number retains full precision.
+    // Because of catastrophic cancellation, this is the highest precision that
+    // exp() - 1 will work for. expm1 on the same number retains full precision.
     test_all_prec!(
         exp_v_small:
             dd!("1.0000000000000000000000000000500003e-28"),

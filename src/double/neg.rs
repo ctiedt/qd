@@ -4,7 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 use crate::double::Double;
-use std::ops::Neg;
+use core::ops::Neg;
 
 impl Neg for Double {
     type Output = Double;

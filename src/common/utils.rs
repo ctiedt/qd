@@ -3,6 +3,8 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+use alloc::string::ToString;
+
 use crate::common::primitive as p;
 
 /// Calculates the sum of three `f64`s in double-double precision.
@@ -68,9 +70,10 @@ pub fn nine_two_sum(
 
 /// Adds a float to an value/error pair.
 ///
-/// If the result of this addition doesn't fit in two `f64`s, the sum is output as the first
-/// tuple component and the second and third contain the remainder. Otherwise, the first
-/// tuple component is `0.0` and the sum is in the other two components.
+/// If the result of this addition doesn't fit in two `f64`s, the sum is output
+/// as the first tuple component and the second and third contain the remainder.
+/// Otherwise, the first tuple component is `0.0` and the sum is in the other
+/// two components.
 #[inline]
 pub fn accumulate(a: f64, b: f64, c: f64) -> (f64, f64, f64) {
     let (s, b) = p::two_sum(b, c);
@@ -88,19 +91,17 @@ pub fn accumulate(a: f64, b: f64, c: f64) -> (f64, f64, f64) {
 
 /// Renormalizes two components into a two-component value.
 ///
-/// Renormalization ensures that the components of the returned tuple are arranged in such a
-/// way that the absolute value of the last component is no more than half the ULP of the
-/// first.
+/// Renormalization ensures that the components of the returned tuple are
+/// arranged in such a way that the absolute value of the last component is no
+/// more than half the ULP of the first.
 #[inline]
-pub fn renorm2(a: f64, b: f64) -> (f64, f64) {
-    p::quick_two_sum(a, b)
-}
+pub fn renorm2(a: f64, b: f64) -> (f64, f64) { p::quick_two_sum(a, b) }
 
 /// Renormalizes three components into a two-component value.
 ///
-/// Renormalization ensures that the components of the returned tuple are arranged in such a
-/// way that the absolute value of the last component is no more than half the ULP of the
-/// first.
+/// Renormalization ensures that the components of the returned tuple are
+/// arranged in such a way that the absolute value of the last component is no
+/// more than half the ULP of the first.
 #[inline]
 pub fn renorm3(a: f64, b: f64, c: f64) -> (f64, f64) {
     let (u, v) = p::quick_two_sum(a, b);
@@ -110,9 +111,9 @@ pub fn renorm3(a: f64, b: f64, c: f64) -> (f64, f64) {
 
 /// Renormalizes four components into a four-component value.
 ///
-/// Renormalization ensures that the components of the returned tuple are arranged in such a
-/// way that the absolute value of each component is no more than half of the ULP of the
-/// prior component.
+/// Renormalization ensures that the components of the returned tuple are
+/// arranged in such a way that the absolute value of each component is no more
+/// than half of the ULP of the prior component.
 #[inline]
 pub fn renorm4(a: f64, b: f64, c: f64, d: f64) -> (f64, f64, f64, f64) {
     let (x, s3) = p::quick_two_sum(c, d);
@@ -142,9 +143,9 @@ pub fn renorm4(a: f64, b: f64, c: f64, d: f64) -> (f64, f64, f64, f64) {
 
 /// Renormalizes five components into a four-component value.
 ///
-/// Renormalization ensures that the components of the returned tuple are arranged in such a
-/// way that the absolute value of each component is no more than half of the ULP of the
-/// prior component.
+/// Renormalization ensures that the components of the returned tuple are
+/// arranged in such a way that the absolute value of each component is no more
+/// than half of the ULP of the prior component.
 #[inline]
 pub fn renorm5(a: f64, b: f64, c: f64, d: f64, e: f64) -> (f64, f64, f64, f64) {
     let (x, s4) = p::quick_two_sum(d, e);
@@ -196,18 +197,20 @@ pub fn renorm5(a: f64, b: f64, c: f64, d: f64, e: f64) -> (f64, f64, f64, f64) {
     }
 }
 
-/// Determines whether a number is exact (true) or has floating-point error (false).
+/// Determines whether a number is exact (true) or has floating-point error
+/// (false).
 ///
-/// A number is exactly representable in binary if it can be rendered as a fraction with a
-/// power of two as an exponent. If so, then floating-point error doesn't exist and the
-/// number can be turned into a quad- or double-double much more efficiently.
+/// A number is exactly representable in binary if it can be rendered as a
+/// fraction with a power of two as an exponent. If so, then floating-point
+/// error doesn't exist and the number can be turned into a quad- or
+/// double-double much more efficiently.
 pub fn is_dyadic(n: f64) -> bool {
-    let f = n.fract();
+    let f = libm::fmod(n, 1.0);
     if f == 0.0 {
         true
     } else {
         let len = f.to_string().len() - 2; // ignore the leading "0."
-        let base = 2f64.powi(-(len as i32));
+        let base = libm::pow(2.0, -(len as f64));
         f % base == 0.0
     }
 }

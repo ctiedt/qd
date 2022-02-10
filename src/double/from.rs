@@ -5,7 +5,7 @@
 
 use crate::common::utils as u;
 use crate::double::Double;
-use std::f64;
+use core::f64;
 
 #[inline]
 fn split_u64(a: u64) -> (u32, u32) {
@@ -16,21 +16,21 @@ fn split_u64(a: u64) -> (u32, u32) {
 
 fn from_u64(a: u64) -> Double {
     let (x, y) = split_u64(a);
-    let (a, b) = u::renorm2(x as f64 * 2f64.powi(32), y as f64);
+    let (a, b) = u::renorm2(x as f64 * libm::pow(2.0, 32.0), y as f64);
     Double(a, b)
 }
 
 fn from_i64(a: i64) -> Double {
     let sign = a.signum();
-    // The first part prevents a.abs() from failing with overflow because the absolute
-    // value of i64::MIN is i64::MAX + 1
+    // The first part prevents a.abs() from failing with overflow because the
+    // absolute value of i64::MIN is i64::MAX + 1
     let a = if a == i64::MIN {
         i64::MAX as u64 + 1
     } else {
         a.abs() as u64
     };
     let (x, y) = split_u64(a);
-    let (a, b) = u::renorm2(x as f64 * 2f64.powi(32), y as f64);
+    let (a, b) = u::renorm2(x as f64 * libm::pow(2.0, 32.0), y as f64);
     if sign == -1 {
         Double(-a, -b)
     } else {
@@ -40,13 +40,13 @@ fn from_i64(a: i64) -> Double {
 
 // FROM INTEGER IMPLEMENTATIONS
 //
-// These are simple enough - since integers are inherently dyadic (as long as they fit into
-// `f64`s - see below), they can just be cast to `f64`s and sent directly into the `Double`
-// constructor.
+// These are simple enough - since integers are inherently dyadic (as long as
+// they fit into `f64`s - see below), they can just be cast to `f64`s and sent
+// directly into the `Double` constructor.
 //
-// The exceptions are `i64` and `u64`, which don't fit into `f64`s. They get their own
-// separate (non-macro) functions that split them into two 32-bit parts which are then
-// renormalized into a proper `Double`.
+// The exceptions are `i64` and `u64`, which don't fit into `f64`s. They get
+// their own separate (non-macro) functions that split them into two 32-bit
+// parts which are then renormalized into a proper `Double`.
 
 macro_rules! from_int_impl {
     ($(
@@ -126,8 +126,8 @@ from_int_impl! {
     u32
 }
 
-// Separate implementations for the 64-bit integers because they require splitting to fit
-// into 53-bit mantissas, so their code is different.
+// Separate implementations for the 64-bit integers because they require
+// splitting to fit into 53-bit mantissas, so their code is different.
 
 impl From<u64> for Double {
     /// Generates a `Double` from a `u64`.
@@ -139,9 +139,7 @@ impl From<u64> for Double {
     /// let a = Double::from(x);
     /// assert!(a.to_string() == "18446744073709551615");
     /// ```
-    fn from(a: u64) -> Double {
-        from_u64(a)
-    }
+    fn from(a: u64) -> Double { from_u64(a) }
 }
 
 impl From<i64> for Double {
@@ -154,22 +152,21 @@ impl From<i64> for Double {
     /// let a = Double::from(x);
     /// assert!(a.to_string() == "-9223372036854775808");
     /// ```
-    fn from(a: i64) -> Double {
-        from_i64(a)
-    }
+    fn from(a: i64) -> Double { from_i64(a) }
 }
 
 // FROM FLOAT IMPLEMENTATIONS
 //
-// The Rust conversion from f32 to f64 is a bit-for-bit translation. It does not attempt to
-// account for floating point rounding error, so the parsed f64 is different from the
-// "equivalent" parsed f32. So rather than having a helper function that takes an f64, we
-// put the entire function into this macro so that `a.to_string().parse().unwrap()` calls
-// the f32 parser if an f32 is being converted.
+// The Rust conversion from f32 to f64 is a bit-for-bit translation. It does not
+// attempt to account for floating point rounding error, so the parsed f64 is
+// different from the "equivalent" parsed f32. So rather than having a helper
+// function that takes an f64, we put the entire function into this macro so
+// that `a.to_string().parse().unwrap()` calls the f32 parser if an f32 is being
+// converted.
 //
-// is_dyadic is still fine to convert for, because a dyadic f32 will convert accurately
-// into an f64 (and still return true) while a non-dyadic f32 may not convert accurately,
-// but it'll still be non-dyadic after the conversion.
+// is_dyadic is still fine to convert for, because a dyadic f32 will convert
+// accurately into an f64 (and still return true) while a non-dyadic f32 may not
+// convert accurately, but it'll still be non-dyadic after the conversion.
 macro_rules! from_float_impl {
     ($(
         $(#[$m:meta])*
@@ -200,7 +197,7 @@ macro_rules! from_float_impl {
                     //
                     // `unwrap` is safe because `a.to_string` will never return a string
                     // that can't be parsed into a Double.
-                    a.to_string().parse().unwrap()
+                    alloc::string::ToString::to_string(&a).parse().unwrap()
                 }
             }
         }
@@ -265,14 +262,16 @@ from_float_impl! {
 impl From<(f64, f64)> for Double {
     /// Generates a `Double` from a 2-tuple of `f64`s.
     ///
-    /// This conversion acts like [`new`] does: it assumes that if you're creating a
-    /// `Double` out of a pair of numbers, you already know what you want those numbers to
-    /// be. Therefore it neither renormalizes or accounts for rounding error.
+    /// This conversion acts like [`new`] does: it assumes that if you're
+    /// creating a `Double` out of a pair of numbers, you already know what
+    /// you want those numbers to be. Therefore it neither renormalizes or
+    /// accounts for rounding error.
     ///
-    /// No other `From` implementations are provided for tuples. There is no way to provide
-    /// a pre-normalized pair of integers, and since tuple conversion doesn't adjust for
-    /// rounding error, it's better to make the user explicity cast `f32`s first in the
-    /// manner of their choosing.
+    /// No other `From` implementations are provided for tuples. There is no way
+    /// to provide a pre-normalized pair of integers, and since tuple
+    /// conversion doesn't adjust for rounding error, it's better to make
+    /// the user explicity cast `f32`s first in the manner of their
+    /// choosing.
     ///
     /// # Examples
     /// ```
@@ -284,24 +283,24 @@ impl From<(f64, f64)> for Double {
     ///
     /// [`new`]: #method.new
     #[inline]
-    fn from((a, b): (f64, f64)) -> Double {
-        Double(a, b)
-    }
+    fn from((a, b): (f64, f64)) -> Double { Double(a, b) }
 }
 
 impl From<&str> for Double {
     /// Parses a string to create a `Double`.
     ///
-    /// The parser works pretty similarly to parsers for `f32` and `f64`. It will fail if
-    /// characters are present that are not digits, decimal points, signs, or exponent
-    /// markers. It will also fail if there are multiples of these or if they're in the
-    /// wrong places; two decimal points or a negative sign after the number will both be
+    /// The parser works pretty similarly to parsers for `f32` and `f64`. It
+    /// will fail if characters are present that are not digits, decimal
+    /// points, signs, or exponent markers. It will also fail if there are
+    /// multiples of these or if they're in the wrong places; two decimal
+    /// points or a negative sign after the number will both be
     /// rejected, for instance.
     ///
-    /// Failure will return [`NAN`]. This can be an issue because parsing the string `"nan"`
-    /// *also* produces [`NAN`]. For this reason it's suggested to use [`from_str`] (or its
-    /// associated `parse` function) instead of this function if there is any chance that
-    /// the parsed string will be legitimately [`NAN`].
+    /// Failure will return [`NAN`]. This can be an issue because parsing the
+    /// string `"nan"` *also* produces [`NAN`]. For this reason it's
+    /// suggested to use [`from_str`] (or its associated `parse` function)
+    /// instead of this function if there is any chance that the parsed
+    /// string will be legitimately [`NAN`].
     ///
     /// # Examples
     /// ```
@@ -315,21 +314,20 @@ impl From<&str> for Double {
     ///
     /// [`NAN`]: #associatedconstant.NAN
     /// [`from_str`]: #method.from_str
-    fn from(s: &str) -> Double {
-        s.parse().unwrap_or(Double::NAN)
-    }
+    fn from(s: &str) -> Double { s.parse().unwrap_or(Double::NAN) }
 }
 
 impl From<Double> for f64 {
     /// Converts a `Double` into an `f64`.
     ///
-    /// This will lose precision if the second component of the `Double` is not 0, but it
-    /// will not lose range.
+    /// This will lose precision if the second component of the `Double` is not
+    /// 0, but it will not lose range.
     ///
-    /// No other conversions from `Double` to numeric types are provided, as every other one
-    /// has the capability of losing range (for example, no other type could be used to
-    /// represent `dd!(1e308)`). Casts can be made from the `f64` provided by this function
-    /// to other numeric types as needed.
+    /// No other conversions from `Double` to numeric types are provided, as
+    /// every other one has the capability of losing range (for example, no
+    /// other type could be used to represent `dd!(1e308)`). Casts can be
+    /// made from the `f64` provided by this function to other numeric types
+    /// as needed.
     ///
     /// # Examples
     /// ```
@@ -337,22 +335,21 @@ impl From<Double> for f64 {
     /// let a = Double::PI;
     /// let x = f64::from(a);
     ///
-    /// let diff = (x - std::f64::consts::PI).abs();
+    /// let diff = (x - core::f64::consts::PI).abs();
     /// assert!(diff < 1e-15);
     /// ```
     #[inline]
-    fn from(a: Double) -> f64 {
-        a.0
-    }
+    fn from(a: Double) -> f64 { a.0 }
 }
 
 impl From<Double> for (f64, f64) {
     /// Converts a `Double` into a tuple of `f64`s.
     ///
-    /// The components of the double become the components of the returned tuple. Note that,
-    /// while the value of the first component is simply the `f64` cast of the `Double`
-    /// itself, the second component encodes the next digits of the `Double` *plus* the
-    /// rounding error in the first component. For that reason, it's not likely to be very
+    /// The components of the double become the components of the returned
+    /// tuple. Note that, while the value of the first component is simply
+    /// the `f64` cast of the `Double` itself, the second component encodes
+    /// the next digits of the `Double` *plus* the rounding error in the
+    /// first component. For that reason, it's not likely to be very
     /// useful outside of a `Double` context.
     ///
     /// # Examples
@@ -363,13 +360,13 @@ impl From<Double> for (f64, f64) {
     /// assert!(b == 1.2246467991473532e-16); // *not* the next 16 digits of π
     /// ```
     #[inline]
-    fn from(a: Double) -> (f64, f64) {
-        (a.0, a.1)
-    }
+    fn from(a: Double) -> (f64, f64) { (a.0, a.1) }
 }
 
 #[cfg(test)]
 mod tests {
+    use alloc::string::ToString;
+
     use super::*;
 
     // f32 tests
@@ -388,13 +385,13 @@ mod tests {
             dd!(-0.0f32);
         f32_inf:
             Double::INFINITY,
-            std::f32::INFINITY;
+            core::f32::INFINITY;
         f32_neg_inf:
             Double::NEG_INFINITY,
-            std::f32::NEG_INFINITY;
+            core::f32::NEG_INFINITY;
         f32_nan:
             Double::NAN,
-            std::f32::NAN;
+            core::f32::NAN;
     );
     test!(f32_nonrep: {
         assert_ne!(dd!(1.1f32).1, 0.0);
@@ -419,13 +416,13 @@ mod tests {
             dd!(-0.0);
         f64_inf:
             Double::INFINITY,
-            std::f64::INFINITY;
+            core::f64::INFINITY;
         f64_neg_inf:
             Double::NEG_INFINITY,
-            std::f64::NEG_INFINITY;
+            core::f64::NEG_INFINITY;
         f64_nan:
             Double::NAN,
-            std::f64::NAN;
+            core::f64::NAN;
     );
     test!(f64_nonrep: {
         assert_ne!(dd!(1.1).1, 0.0);

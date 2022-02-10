@@ -14,7 +14,7 @@ macro_rules! prec {
         };
         let epsilon = Quad(10.0, 0.0, 0.0, 0.0).powi(mag - $digits);
         let diff = (expected - actual).abs();
-        let message = format!(
+        let message = alloc::format!(
             concat!(
                 "\n",
                 "Expected: {0}\n",
@@ -40,7 +40,7 @@ macro_rules! prec {
             actual[2],
             actual[3],
         );
-        assert!(diff < epsilon, message);
+        assert!(diff < epsilon, &message);
     };
 }
 
@@ -54,7 +54,7 @@ macro_rules! exact {
     ($expected:expr, $actual:expr $(,)?) => {
         let expected = Quad::from($expected);
         let actual = Quad::from($actual);
-        let message = format!(
+        let message = alloc::format!(
             concat!(
                 "\n",
                 "Expected: {0}\n",
@@ -76,9 +76,9 @@ macro_rules! exact {
             actual[3],
         );
         if expected.is_nan() {
-            assert!(actual.is_nan(), message);
+            assert!(actual.is_nan(), &message);
         } else {
-            assert!(expected == actual, message);
+            assert!(expected == actual, &message);
         }
     };
 }

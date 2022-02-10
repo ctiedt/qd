@@ -4,18 +4,19 @@
 // https://opensource.org/licenses/MIT
 
 use crate::quad::Quad;
-use std::cmp::Ordering;
+use core::cmp::Ordering;
 
 impl PartialEq for Quad {
     /// Calculates whether `self` and the argument are equal to one another.
     ///
     /// This implements the `==` and `!=` operators between `Quad`s.
     ///
-    /// Equality works exactly the same as it does for system floating-point numbers (`f64`,
-    /// etc.), including zero equalling negative zero, `NaN` equalling nothing (including
-    /// itself), etc. Notably, equality should be used with care since floating-point
-    /// rounding, even with the increased precision of `Quad`s, will still cause some
-    /// numbers that should be equal to not be equal.
+    /// Equality works exactly the same as it does for system floating-point
+    /// numbers (`f64`, etc.), including zero equalling negative zero, `NaN`
+    /// equalling nothing (including itself), etc. Notably, equality should
+    /// be used with care since floating-point rounding, even with the
+    /// increased precision of `Quad`s, will still cause some numbers that
+    /// should be equal to not be equal.
     ///
     /// # Examples
     /// ```
@@ -34,11 +35,12 @@ impl PartialEq for Quad {
 impl PartialOrd for Quad {
     /// Calculates how `self` and the argument should be ordered.
     ///
-    /// This implements the `<`, `>`, `<=`, and `>=` operators between two `Quad`s.
+    /// This implements the `<`, `>`, `<=`, and `>=` operators between two
+    /// `Quad`s.
     ///
-    /// Ordering works the same as it does for system floating-point numbers, including
-    /// `NaN` returning false for any of these operators (including when comparing it to
-    /// itself).
+    /// Ordering works the same as it does for system floating-point numbers,
+    /// including `NaN` returning false for any of these operators
+    /// (including when comparing it to itself).
     ///
     /// # Examples
     /// ```
@@ -47,7 +49,6 @@ impl PartialOrd for Quad {
     /// assert!(qd!(0.0) <= qd!(-0.0));
     /// assert!(!(Quad::NAN >= Quad::NAN));
     /// ```
-    ///
     #[inline]
     fn partial_cmp(&self, other: &Quad) -> Option<Ordering> {
         match self.0.partial_cmp(&other.0) {

@@ -11,10 +11,11 @@ use crate::double::Double;
 impl Double {
     /// Calculates $x\sdot2^n$, where $x$ is `self` and $n$ is the argument.
     ///
-    /// Though this is not an everyday operation, it is often used in more advanced
-    /// mathematical calculations (including several within this library). Therefore an
-    /// implementation that is much more efficient than calculating it through
-    /// multiplication and [`powi`] is offered despite it not being part of the `f64` API.
+    /// Though this is not an everyday operation, it is often used in more
+    /// advanced mathematical calculations (including several within this
+    /// library). Therefore an implementation that is much more efficient
+    /// than calculating it through multiplication and [`powi`] is offered
+    /// despite it not being part of the `f64` API.
     ///
     /// # Examples
     /// ```
@@ -26,32 +27,34 @@ impl Double {
     /// [`powi`]: #method.powi
     #[inline]
     pub fn ldexp(self, n: i32) -> Double {
-        let factor = 2f64.powi(n);
+        let factor = libm::pow(2.0, n as f64);
         Double(self.0 * factor, self.1 * factor)
     }
 
-    /// Calculates the arithmetic-geometric mean of $x$ and $y$ ($M(x, y)$ or $\text{agm}(x,
-    /// y)$), where $x$ and $y$ are `self` and the argument.
+    /// Calculates the arithmetic-geometric mean of $x$ and $y$ ($M(x, y)$ or
+    /// $\text{agm}(x, y)$), where $x$ and $y$ are `self` and the argument.
     ///
-    /// The AGM is an iterative calculation. $x$ and $y$ are assigned as the two inputs to
-    /// the first iteration.
+    /// The AGM is an iterative calculation. $x$ and $y$ are assigned as the two
+    /// inputs to the first iteration.
     ///
     /// $$a_0 = x \newline g_0 = y$$
     ///
-    /// Then the iterations are performed as two interdependent sequences, one calculating
-    /// the arithmetic mean and one the geometric mean. The results from each iteration are
-    /// fed back into the next iteration as inputs.
+    /// Then the iterations are performed as two interdependent sequences, one
+    /// calculating the arithmetic mean and one the geometric mean. The
+    /// results from each iteration are fed back into the next iteration as
+    /// inputs.
     ///
     /// $$a_{n + 1} = \frac{a_n + g_n}{2}$$
     /// $$g_{n + 1} = \sqrt{a_{n}g_{n}}$$
     ///
-    /// These numbers both converge towards the same number, and once they reach that
-    /// number, it's returned as the AGM.
+    /// These numbers both converge towards the same number, and once they reach
+    /// that number, it's returned as the AGM.
     ///
-    /// These sequences converge very quickly, doubling the accuracy with each iteration.
-    /// The AGM can be used in fast algorithms for transcendental functions and for
-    /// computing some mathematical constants (most notably $\pi$). The speed advantage from
-    /// its fast convergence is realized at around 400 decimal digits, so it isn't currently
+    /// These sequences converge very quickly, doubling the accuracy with each
+    /// iteration. The AGM can be used in fast algorithms for transcendental
+    /// functions and for computing some mathematical constants (most
+    /// notably $\pi$). The speed advantage from its fast convergence is
+    /// realized at around 400 decimal digits, so it isn't currently
     /// used for these purposes in this library.
     ///
     /// # Examples
@@ -70,10 +73,8 @@ impl Double {
                 let mut a = c::mul_pwr2(self + other, 0.5);
                 let mut g = (self * other).sqrt();
 
-                let k = a.0.log2().floor() as i32;
-                let eps = c::mul_pwr2(Double::EPSILON, 2f64.powi(k + 2));
-
-                println!("Eps: {}", eps);
+                let k = libm::floor(libm::log2(a.0)) as i32;
+                let eps = c::mul_pwr2(Double::EPSILON, libm::pow(2.0, (k + 2) as f64));
 
                 while (a - g).abs() > eps {
                     let am = c::mul_pwr2(a + g, 0.5);
@@ -88,9 +89,9 @@ impl Double {
 
     /// Calculates the square of $x$, $x^2$, where $x$ is `self`.
     ///
-    /// This method takes advantage of optimizations in multiplication that are available
-    /// when the two numbers being multiplied are the same, so it is more efficient than
-    /// bare multiplication.
+    /// This method takes advantage of optimizations in multiplication that are
+    /// available when the two numbers being multiplied are the same, so it
+    /// is more efficient than bare multiplication.
     ///
     /// # Examples
     /// ```
@@ -133,15 +134,15 @@ impl Double {
                 // The approximation is accurate to twice the accuracy of x. This can be
                 // repeated an arbitrary number of times, but this method when used on
                 // double-doubles only requires one iteration.
-                let x = Double::from(1.0 / self.0.sqrt());
+                let x = Double::from(1.0 / libm::sqrt(self.0));
                 let ax = self * x;
                 ax + (self - ax.sqr()) * c::mul_pwr2(x, 0.5)
             }
         }
     }
 
-    /// Calculates the $n$th root of $x$, $\sqrt\[n\]{x}$, where $x$ is `self` and $n$
-    /// is the argument.
+    /// Calculates the $n$th root of $x$, $\sqrt\[n\]{x}$, where $x$ is `self`
+    /// and $n$ is the argument.
     ///
     /// # Examples
     /// ```
@@ -171,7 +172,7 @@ impl Double {
 
                 let r = self.abs();
                 // a^(-1/n) = exp(-ln(a) / n)
-                let mut x = Double::from((-(r.0.ln()) / n as f64).exp());
+                let mut x = Double::from(libm::exp(-(libm::log(r.0)) / n as f64));
 
                 x += x * (Double::ONE - r * x.powi(n)) / Double(n.into(), 0.0);
                 if self.is_sign_negative() {
@@ -194,15 +195,13 @@ impl Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    pub fn cbrt(self) -> Double {
-        self.nroot(3)
-    }
+    pub fn cbrt(self) -> Double { self.nroot(3) }
 
-    /// Calculates $x$ raised to the integer power $n$, $x^n$, where $x$ is `self` and
-    /// $n$ is the argument.
+    /// Calculates $x$ raised to the integer power $n$, $x^n$, where $x$ is
+    /// `self` and $n$ is the argument.
     ///
-    /// This function correctly handles the special inputs defined in IEEE 754. In
-    /// particular:
+    /// This function correctly handles the special inputs defined in IEEE 754.
+    /// In particular:
     ///
     /// * `x.powi(0)` is $1$ for any `x` (including `0`, `NaN`, or `inf`)
     /// * `x.powi(n)` is $\pm\infin$ for `x` = $\pm0$ and any odd negative `n`
@@ -247,20 +246,23 @@ impl Double {
         }
     }
 
-    /// Calculates $x$ raised to the `Double` power $n$, $x^n$, where $x$ is `self`
-    /// and $n$ is the argument.
+    /// Calculates $x$ raised to the `Double` power $n$, $x^n$, where $x$ is
+    /// `self` and $n$ is the argument.
     ///
-    /// In general, $x^n$ is equal to $e^{n \ln x}$. This precludes raising a negative
-    /// `Double` to a fractional or irrational power because $\ln x$ is undefined when $x$
-    /// is negative. In that case, this function returns [`NAN`].
+    /// In general, $x^n$ is equal to $e^{n \ln x}$. This precludes raising a
+    /// negative `Double` to a fractional or irrational power because $\ln
+    /// x$ is undefined when $x$ is negative. In that case, this function
+    /// returns [`NAN`].
     ///
-    /// It's actually more complex than that; if the exponent can be expressed as a fraction
-    /// with an odd denominator, then there is an answer ($\sqrt\[3\]{x}$, which is defined
-    /// for negative $x$, is the same as a $x^\frac{1}{3}$). Therefore, something like
-    /// `dd!(-4).powf(dd!(0.2))` should work, as 0.2 is a fraction with an odd denominator
-    /// ($\frac{1}{5}$), and the entire expression is the same as $\sqrt\[5\]{-4}$, which is
-    /// a real thing. However, it's impossible in general to tell whether a number is a
-    /// fraction while using floating-point numbers, so no attempt is made to make this
+    /// It's actually more complex than that; if the exponent can be expressed
+    /// as a fraction with an odd denominator, then there is an answer
+    /// ($\sqrt\[3\]{x}$, which is defined for negative $x$, is the same as
+    /// a $x^\frac{1}{3}$). Therefore, something like `dd!(-4).powf(dd!(0.
+    /// 2))` should work, as 0.2 is a fraction with an odd denominator
+    /// ($\frac{1}{5}$), and the entire expression is the same as
+    /// $\sqrt\[5\]{-4}$, which is a real thing. However, it's impossible in
+    /// general to tell whether a number is a fraction while using
+    /// floating-point numbers, so no attempt is made to make this
     /// work. If you need a fifth root of 4, use `dd!(-4).nroot(5)`.
     ///
     /// # Examples
@@ -294,18 +296,17 @@ impl Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    pub fn recip(self) -> Double {
-        Double::ONE / self
-    }
+    pub fn recip(self) -> Double { Double::ONE / self }
 
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_agm(&self, other: &Double) -> Option<Double> {

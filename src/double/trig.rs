@@ -7,9 +7,9 @@ use crate::double::common as c;
 use crate::double::Double;
 
 impl Double {
-    /// Simultaneously computes the sine and cosine of $x$, $\sin x$ and $\cos x$, where $x$
-    /// is `self`. This is more efficient than calling the separate [`sin`] and [`cos`]
-    /// functions if you need both numbers.
+    /// Simultaneously computes the sine and cosine of $x$, $\sin x$ and $\cos
+    /// x$, where $x$ is `self`. This is more efficient than calling the
+    /// separate [`sin`] and [`cos`] functions if you need both numbers.
     ///
     /// # Examples
     /// ```
@@ -60,7 +60,8 @@ impl Double {
 
     /// Computes the sine of $x$, $\sin x$, where $x$ is `self`.
     ///
-    /// The domain of this function is $(-\infin, \infin)$, and the range is $[-1, 1]$.
+    /// The domain of this function is $(-\infin, \infin)$, and the range is
+    /// $[-1, 1]$.
     ///
     /// # Examples
     /// ```
@@ -122,7 +123,8 @@ impl Double {
 
     /// Computes the cosine of $x$, $\cos x$, where $x$ is `self`.
     ///
-    /// The domain of this function is $(-\infin, \infin)$, and the range is $[-1, 1]$.
+    /// The domain of this function is $(-\infin, \infin)$, and the range is
+    /// $[-1, 1]$.
     ///
     /// # Examples
     /// ```
@@ -191,27 +193,30 @@ impl Double {
         s / c
     }
 
-    /// Computes the 2-argument inverse tangent of $x$ and $y$, $\arctan(y, x)$, where $x$
-    /// is the argument and $y$ is `self`.
+    /// Computes the 2-argument inverse tangent of $x$ and $y$, $\arctan(y, x)$,
+    /// where $x$ is the argument and $y$ is `self`.
     ///
-    /// The single-argument [`atan`] function always returns values in either the first (0
-    /// to $\pi$/2) or fourth (0 to $-\pi$/2) quadrants. However, first-quadrant results
-    /// repeat themselves in the third quadrant, and fourth-quadrant results repeat
-    /// themselves in the second. For example, $\tan \frac{\pi}{4}$ is 1, but so is $\tan
-    /// \frac{3\pi}{4}$. Single-argument [`atan`] cannot distinguish between these two
-    /// possibilities, so it always returns the one in the range $[-\frac{\pi}{2},
-    /// \frac{\pi}{2}]$.
+    /// The single-argument [`atan`] function always returns values in either
+    /// the first (0 to $\pi$/2) or fourth (0 to $-\pi$/2) quadrants.
+    /// However, first-quadrant results repeat themselves in the third
+    /// quadrant, and fourth-quadrant results repeat themselves in the
+    /// second. For example, $\tan \frac{\pi}{4}$ is 1, but so is $\tan
+    /// \frac{3\pi}{4}$. Single-argument [`atan`] cannot distinguish between
+    /// these two possibilities, so it always returns the one in the range
+    /// $[-\frac{\pi}{2}, \frac{\pi}{2}]$.
     ///
-    /// The double-argument `atan2` can return either, depending on the arguments. It
-    /// essentially returns the angle between the positive x-axis and the point $(x, y)$,
-    /// where $y$ is `self` and $x$ is the argument. Therefore `dd!(1).atan2(dd!(1))`
-    /// returns $\frac{\pi}{4}$ (first quadrant), but flipping both signs to
-    /// `dd!(-1).atan2(dd!(-1))` gives the $-\frac{3\pi}{4}$ result (third quadrant).
+    /// The double-argument `atan2` can return either, depending on the
+    /// arguments. It essentially returns the angle between the positive
+    /// x-axis and the point $(x, y)$, where $y$ is `self` and $x$ is the
+    /// argument. Therefore `dd!(1).atan2(dd!(1))` returns $\frac{\pi}{4}$
+    /// (first quadrant), but flipping both signs to `dd!(-1).atan2(dd!
+    /// (-1))` gives the $-\frac{3\pi}{4}$ result (third quadrant).
     ///
     /// This function extends the range of the result to $[-\pi, \pi]$.
     ///
-    /// Because this function deals with angles around the origin and Cartesian coordinates,
-    /// it's very useful for converting between Cartesian and polar coordinates.
+    /// Because this function deals with angles around the origin and Cartesian
+    /// coordinates, it's very useful for converting between Cartesian and
+    /// polar coordinates.
     ///
     /// # Examples
     /// ```
@@ -261,10 +266,10 @@ impl Double {
                 let y = self / r;
 
                 // Compute f64 approximation to atan
-                let mut z = Double::from(self.0.atan2(other.0));
+                let mut z = Double::from(libm::atan2(self.0, other.0));
                 let (sin_z, cos_z) = z.sin_cos();
 
-                if x.0.abs() > y.0.abs() {
+                if libm::fabs(x.0) > libm::fabs(y.0) {
                     // Use first iteration above
                     z += (y - sin_z) / cos_z;
                 } else {
@@ -278,8 +283,9 @@ impl Double {
 
     /// Computes the inverse sine of $x$, $\sin^{-1} x$, where $x$ is `self`.
     ///
-    /// The domain of this function is $[-1, 1]$ while the range is $[-\frac{\pi}{2},
-    /// \frac{\pi}{2}]$. Arguments outside of this domain will result in [`NAN`].
+    /// The domain of this function is $[-1, 1]$ while the range is
+    /// $[-\frac{\pi}{2}, \frac{\pi}{2}]$. Arguments outside of this domain
+    /// will result in [`NAN`].
     ///
     /// # Examples
     /// ```
@@ -301,8 +307,8 @@ impl Double {
 
     /// Computes the inverse cosine of $x$, $\cos^{-1} x$, where $x$ is `self`.
     ///
-    /// The domain of this function is $[-1, 1]$ and the range is $[0, \pi]$. Arguments
-    /// outside of the domain will result in [`NAN`].
+    /// The domain of this function is $[-1, 1]$ and the range is $[0, \pi]$.
+    /// Arguments outside of the domain will result in [`NAN`].
     ///
     /// # Examples
     /// ```
@@ -324,10 +330,10 @@ impl Double {
 
     /// Computes the inverse tangent of $x$, $\tan^{-1} x$, where $x$ is `self`.
     ///
-    /// This is the single-argument version of this function ([`atan2`] is the two-argument
-    /// inverse tangent). Though inverse tangents have multiple answers, this function will
-    /// always return the one with the lowest absolute value. `x.atan()` is the same as
-    /// `x.atan2(Double::ONE)`.
+    /// This is the single-argument version of this function ([`atan2`] is the
+    /// two-argument inverse tangent). Though inverse tangents have multiple
+    /// answers, this function will always return the one with the lowest
+    /// absolute value. `x.atan()` is the same as `x.atan2(Double::ONE)`.
     ///
     /// The domain of this function is $(-\infin, \infin)$ and the range is
     /// $[-\frac{\pi}{2}, \frac{\pi}{2}]$.
@@ -343,18 +349,17 @@ impl Double {
     /// ```
     ///
     /// [`atan2`]: #method.atan2
-    pub fn atan(self) -> Double {
-        self.atan2(Double::ONE)
-    }
+    pub fn atan(self) -> Double { self.atan2(Double::ONE) }
 
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_sin_cos(&self) -> Option<(Double, Double)> {
@@ -511,9 +516,9 @@ fn cos_taylor(a: Double) -> Double {
     }
 }
 
-// Computes both the sine and cosine of a using the Taylor series. This is a bit quicker
-// than calling the two functions above separately, since if you have one of them you can
-// calculate the other more efficiently.
+// Computes both the sine and cosine of a using the Taylor series. This is a bit
+// quicker than calling the two functions above separately, since if you have
+// one of them you can calculate the other more efficiently.
 fn sincos_taylor(a: Double) -> (Double, Double) {
     if a.is_zero() {
         (Double::ZERO, Double::ONE)
@@ -523,10 +528,11 @@ fn sincos_taylor(a: Double) -> (Double, Double) {
     }
 }
 
-// Helper function to reduce the input to a value whose sin/cos can be calculated via Taylor
-// series. It firsts reduces modulo 2π, then π/2, then π/16. Aside from returning the
-// reduced value (`t`), it also returns the group within the next higher modulo in which the
-// value fell (`j` and `k`, this is the quadrant for `j`).
+// Helper function to reduce the input to a value whose sin/cos can be
+// calculated via Taylor series. It firsts reduces modulo 2π, then π/2, then
+// π/16. Aside from returning the reduced value (`t`), it also returns the group
+// within the next higher modulo in which the value fell (`j` and `k`, this is
+// the quadrant for `j`).
 #[inline]
 #[allow(clippy::many_single_char_names)]
 fn reduce(a: Double) -> (i32, i32, Double) {
@@ -535,12 +541,12 @@ fn reduce(a: Double) -> (i32, i32, Double) {
     let r = a - z * Double::TAU;
 
     // reduce modulo π/2
-    let mut q = (r.0 / Double::FRAC_PI_2.0 + 0.5).floor();
+    let mut q = libm::floor(r.0 / Double::FRAC_PI_2.0 + 0.5);
     let mut t = r - Double(q, 0.0) * Double::FRAC_PI_2;
     let j = q as i32;
 
     // reduce modulo π/16
-    q = (t.0 / Double::FRAC_PI_16.0 + 0.5).floor();
+    q = libm::floor(t.0 / Double::FRAC_PI_16.0 + 0.5);
     t -= Double(q, 0.0) * Double::FRAC_PI_16;
     let k = q as i32;
 

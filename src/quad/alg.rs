@@ -11,10 +11,11 @@ use crate::quad::Quad;
 impl Quad {
     /// Calculates $x\sdot2^n$, where $x$ is `self` and $n$ is the argument.
     ///
-    /// Though this is not an everyday operation, it is often used in more advanced
-    /// mathematical calculations (including several within this library). Therefore an
-    /// implementation that is much more efficient than calculating it through
-    /// multiplication and [`powi`] is offered despite it not being part of the `f64` API.
+    /// Though this is not an everyday operation, it is often used in more
+    /// advanced mathematical calculations (including several within this
+    /// library). Therefore an implementation that is much more efficient
+    /// than calculating it through multiplication and [`powi`] is offered
+    /// despite it not being part of the `f64` API.
     ///
     /// # Examples
     /// ```
@@ -26,7 +27,7 @@ impl Quad {
     /// [`powi`]: #method.powi
     #[inline]
     pub fn ldexp(self, n: i32) -> Quad {
-        let factor = 2f64.powi(n);
+        let factor = libm::pow(2.0, n as f64);
         Quad(
             self.0 * factor,
             self.1 * factor,
@@ -37,9 +38,9 @@ impl Quad {
 
     /// Calculates the square of $x$, $x^2$, where $x$ is `self`.
     ///
-    /// This method takes advantage of optimizations in multiplication that are available
-    /// when the two numbers being multiplied are the same, so it is more efficient than
-    /// bare multiplication.
+    /// This method takes advantage of optimizations in multiplication that are
+    /// available when the two numbers being multiplied are the same, so it
+    /// is more efficient than bare multiplication.
     ///
     /// # Examples
     /// ```
@@ -124,7 +125,7 @@ impl Quad {
                 // 1/√a. Newton's iteration more or less quadruples the precision with each
                 // pass, so performing it three times should be enough.
 
-                let mut r = Quad::ONE / Quad::from(self.0.sqrt());
+                let mut r = Quad::ONE / Quad::from(libm::sqrt(self.0));
                 let h = c::mul_pwr2(self, 0.5);
                 let k = Quad(0.5, 0.0, 0.0, 0.0);
 
@@ -138,8 +139,8 @@ impl Quad {
         }
     }
 
-    /// Calculates the $n$th root of $x$, $\sqrt\[n\]{x}$, where $x$ is `self` and $n$
-    /// is the argument.
+    /// Calculates the $n$th root of $x$, $\sqrt\[n\]{x}$, where $x$ is `self`
+    /// and $n$ is the argument.
     ///
     /// # Examples
     /// ```
@@ -169,7 +170,7 @@ impl Quad {
 
                 let r = self.abs();
                 // a^(-1/n) = exp(-ln(a) / n)
-                let mut x = Quad::from((-(r.0.ln()) / n as f64).exp());
+                let mut x = Quad::from(libm::exp(-libm::log(r.0) / n as f64));
 
                 let qd_n = Quad(n.into(), 0.0, 0.0, 0.0);
                 x += x * (Quad::ONE - r * x.powi(n)) / qd_n;
@@ -194,15 +195,13 @@ impl Quad {
     /// let diff = (x - expected).abs();
     /// assert!(diff < qd!(1e-60));
     /// ```
-    pub fn cbrt(self) -> Quad {
-        self.nroot(3)
-    }
+    pub fn cbrt(self) -> Quad { self.nroot(3) }
 
-    /// Calculates $x$ raised to the integer power $n$, $x^n$, where $x$ is `self` and
-    /// $n$ is the argument.
+    /// Calculates $x$ raised to the integer power $n$, $x^n$, where $x$ is
+    /// `self` and $n$ is the argument.
     ///
-    /// This function correctly handles the special inputs defined in IEEE 754. In
-    /// particular:
+    /// This function correctly handles the special inputs defined in IEEE 754.
+    /// In particular:
     ///
     /// * `x.powi(0)` is $1$ for any `x` (including `0`, `NaN`, or `inf`)
     /// * `x.powi(n)` is $\pm\infin$ for `x` = $\pm0$ and any odd negative `n`
@@ -247,20 +246,23 @@ impl Quad {
         }
     }
 
-    /// Calculates $x$ raised to the `Quad` power $n$, $x^n$, where $x$ is `self` and $n$ is
-    /// the argument.
+    /// Calculates $x$ raised to the `Quad` power $n$, $x^n$, where $x$ is
+    /// `self` and $n$ is the argument.
     ///
-    /// In general, $x^n$ is equal to $e^{n \ln x}$. This precludes raising a negative
-    /// `Double` to a fractional or irrational power because $\ln x$ is undefined when $x$
-    /// is negative. In that case, this function returns [`NAN`].
+    /// In general, $x^n$ is equal to $e^{n \ln x}$. This precludes raising a
+    /// negative `Double` to a fractional or irrational power because $\ln
+    /// x$ is undefined when $x$ is negative. In that case, this function
+    /// returns [`NAN`].
     ///
-    /// It's actually more complex than that; if the exponent can be expressed as a fraction
-    /// with an odd denominator, then there is an answer ($\sqrt\[3\]{x}$, which is defined
-    /// for negative $x$, is the same as a $x^\frac{1}{3}$). Therefore, something like
-    /// `qd!(-4).powf(qd!(0.2))` should work, as 0.2 is a fraction with an odd denominator
-    /// ($\frac{1}{5}$), and the entire expression is the same as $\sqrt\[5\]{-4}$, which is
-    /// a real thing. However, it's impossible in general to tell whether a number is a
-    /// fraction while using floating-point numbers, so no attempt is made to make this
+    /// It's actually more complex than that; if the exponent can be expressed
+    /// as a fraction with an odd denominator, then there is an answer
+    /// ($\sqrt\[3\]{x}$, which is defined for negative $x$, is the same as
+    /// a $x^\frac{1}{3}$). Therefore, something like `qd!(-4).powf(qd!(0.
+    /// 2))` should work, as 0.2 is a fraction with an odd denominator
+    /// ($\frac{1}{5}$), and the entire expression is the same as
+    /// $\sqrt\[5\]{-4}$, which is a real thing. However, it's impossible in
+    /// general to tell whether a number is a fraction while using
+    /// floating-point numbers, so no attempt is made to make this
     /// work. If you need a fifth root of 4, use `qd!(-4).nroot(5)`.
     ///
     /// # Examples
@@ -294,18 +296,17 @@ impl Quad {
     /// assert!(diff < qd!(1e-60));
     /// ```
     #[inline]
-    pub fn recip(self) -> Quad {
-        Quad::ONE / self
-    }
+    pub fn recip(self) -> Quad { Quad::ONE / self }
 
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_sqr(&self) -> Option<Quad> {

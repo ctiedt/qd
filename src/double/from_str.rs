@@ -5,7 +5,7 @@
 
 use crate::double::Double;
 use crate::error::{ErrorKind, ParseDoubleError};
-use std::str::FromStr;
+use core::str::FromStr;
 
 const TEN: Double = Double(10.0, 0.0);
 
@@ -14,10 +14,11 @@ impl FromStr for Double {
 
     /// Parses a string to create a `Double`.
     ///
-    /// The parser works pretty similarly to parsers for `f32` and `f64`. It will fail if
-    /// characters are present that are not digits, decimal points, signs, or exponent
-    /// markers. It will also fail if there are multiples of these or if they're in the
-    /// wrong places; two decimal points or a negative sign after the number will both be
+    /// The parser works pretty similarly to parsers for `f32` and `f64`. It
+    /// will fail if characters are present that are not digits, decimal
+    /// points, signs, or exponent markers. It will also fail if there are
+    /// multiples of these or if they're in the wrong places; two decimal
+    /// points or a negative sign after the number will both be
     /// rejected, for instance.
     ///
     /// Failure will return a [`ParseDoubleError`] of some kind.
@@ -25,7 +26,7 @@ impl FromStr for Double {
     /// # Examples
     /// ```
     /// # use qd::{dd, Double};
-    /// use std::str::FromStr;
+    /// use core::str::FromStr;
     ///
     /// let expected = (dd!(3).powi(15) - dd!(1)) / dd!(3).powi(15);
     ///
@@ -166,13 +167,9 @@ mod tests {
         };
     }
 
-    fn parse(s: &str) -> Double {
-        s.parse().unwrap()
-    }
+    fn parse(s: &str) -> Double { s.parse().unwrap() }
 
-    fn parse_err(s: &str) -> ErrorKind {
-        s.parse::<Double>().unwrap_err().kind
-    }
+    fn parse_err(s: &str) -> ErrorKind { s.parse::<Double>().unwrap_err().kind }
 
     // error tests
     test_all_eq!(
@@ -224,10 +221,11 @@ mod tests {
         single!(16_777_216.0, parse("16_777_216"));
     });
 
-    // With any number big enough to use more than one component, the half-ulp normalization
-    // requirement and the possibility of having differing floating-point precisions between
-    // the components means that the components will not simply be their part of the whole
-    // integer. For example, in the first test below, one might expect that the components
+    // With any number big enough to use more than one component, the half-ulp
+    // normalization requirement and the possibility of having differing
+    // floating-point precisions between the components means that the
+    // components will not simply be their part of the whole integer. For
+    // example, in the first test below, one might expect that the components
     // will be
     //
     //      1.234567890123456e31
@@ -238,10 +236,11 @@ mod tests {
     //      1.2345678901234562e31
     //      -1.064442023724352e15
     //
-    // This makes it prohibitively difficult to write tests for the exact component values.
-    // Instead we construct one value by parsing a string and construct the other value
-    // directly through math between double-precision values. The components of each should
-    // be the same if the parsing is being done correctly.
+    // This makes it prohibitively difficult to write tests for the exact component
+    // values. Instead we construct one value by parsing a string and construct
+    // the other value directly through math between double-precision values.
+    // The components of each should be the same if the parsing is being done
+    // correctly.
 
     test!(double_int: {
         let s = parse("12345678901234561234567890123456");
@@ -253,18 +252,19 @@ mod tests {
         exact!(n, s);
     });
 
-    // The parsed values in the first asserts in each test below are of the form (2ⁿ - 1) /
-    // 2ⁿ. Since this is the same as the sum of the series 1/2⁰ + 1/2¹ + 1/2² + ... 1/2ⁿ,
-    // these numbers are exactly representable in binary.
+    // The parsed values in the first asserts in each test below are of the form (2ⁿ
+    // - 1) / 2ⁿ. Since this is the same as the sum of the series 1/2⁰ + 1/2¹ +
+    // 1/2² + ... 1/2ⁿ, these numbers are exactly representable in binary.
     //
-    // The second asserts use numbers in the form (3ⁿ - 1) / 3ⁿ where n = 15, rounded to the
-    // correct number of digits. Since these are not sums of powers of 2, they are *not*
-    // exactly representable in binary.
+    // The second asserts use numbers in the form (3ⁿ - 1) / 3ⁿ where n = 15,
+    // rounded to the correct number of digits. Since these are not sums of
+    // powers of 2, they are *not* exactly representable in binary.
     //
-    // Parsing any floating-point number will introduce inexactness just because of the
-    // nature of the math used in parsing. However this error will be less than the best
-    // precision offered by the type (most of them are accurate to about 68 digits when only
-    // 63-64 is offered). Therefore `assert_close` is used rather than `assert_exact`.
+    // Parsing any floating-point number will introduce inexactness just because of
+    // the nature of the math used in parsing. However this error will be less
+    // than the best precision offered by the type (most of them are accurate to
+    // about 68 digits when only 63-64 is offered). Therefore `assert_close` is
+    // used rather than `assert_exact`.
 
     test!(single_float: {
         // n = 15

@@ -3,10 +3,12 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
+use alloc::string::ToString;
+
 use crate::common::utils as u;
 use crate::double::Double;
 use crate::quad::Quad;
-use std::f64;
+use core::f64;
 
 #[inline]
 fn split_u64(a: u64) -> (u32, u32) {
@@ -27,21 +29,21 @@ fn split_u128(a: u128) -> (u32, u32, u32, u32) {
 
 fn from_u64(a: u64) -> Quad {
     let (x, y) = split_u64(a);
-    let (a, b, c, d) = u::renorm4(x as f64 * 2f64.powi(32), y as f64, 0.0, 0.0);
+    let (a, b, c, d) = u::renorm4(x as f64 * libm::pow(2.0, 32.0), y as f64, 0.0, 0.0);
     Quad(a, b, c, d)
 }
 
 fn from_i64(a: i64) -> Quad {
     let sign = a.signum();
-    // The first part prevents a.abs() from failing with overflow because the absolute
-    // value of i64::MIN is i64::MAX + 1
+    // The first part prevents a.abs() from failing with overflow because the
+    // absolute value of i64::MIN is i64::MAX + 1
     let a = if a == i64::MIN {
         i64::MAX as u64 + 1
     } else {
         a.abs() as u64
     };
     let (x, y) = split_u64(a);
-    let (a, b, c, d) = u::renorm4(x as f64 * 2f64.powi(32), y as f64, 0.0, 0.0);
+    let (a, b, c, d) = u::renorm4(x as f64 * libm::pow(2.0, 32.0), y as f64, 0.0, 0.0);
     if sign == -1 {
         Quad(-a, -b, -c, -d)
     } else {
@@ -53,9 +55,9 @@ fn from_i64(a: i64) -> Quad {
 fn from_u128(a: u128) -> Quad {
     let (w, x, y, z) = split_u128(a);
     let (a, b, c, d) = u::renorm4(
-        w as f64 * 2f64.powi(96),
-        x as f64 * 2f64.powi(64),
-        y as f64 * 2f64.powi(32),
+        w as f64 * libm::pow(2.0, 96.0),
+        x as f64 * libm::pow(2.0, 64.0),
+        y as f64 * libm::pow(2.0, 32.0),
         z as f64,
     );
     Quad(a, b, c, d)
@@ -64,8 +66,8 @@ fn from_u128(a: u128) -> Quad {
 #[allow(clippy::many_single_char_names)]
 fn from_i128(a: i128) -> Quad {
     let sign = a.signum();
-    // The first part prevents a.abs() from failing with overflow because the absolute
-    // value of i128::MIN is i128::MAX + 1
+    // The first part prevents a.abs() from failing with overflow because the
+    // absolute value of i128::MIN is i128::MAX + 1
     let a = if a == i128::MIN {
         i128::MAX as u128 + 1
     } else {
@@ -73,9 +75,9 @@ fn from_i128(a: i128) -> Quad {
     };
     let (w, x, y, z) = split_u128(a);
     let (a, b, c, d) = u::renorm4(
-        w as f64 * 2f64.powi(96),
-        x as f64 * 2f64.powi(64),
-        y as f64 * 2f64.powi(32),
+        w as f64 * libm::pow(2.0, 96.0),
+        x as f64 * libm::pow(2.0, 64.0),
+        y as f64 * libm::pow(2.0, 32.0),
         z as f64,
     );
     if sign == -1 {
@@ -87,13 +89,13 @@ fn from_i128(a: i128) -> Quad {
 
 // FROM INTEGER IMPLEMENTATIONS
 //
-// These are simple enough - since integers are inherently dyadic (as long as they fit into
-// `f64`s - see below), they can just be cast to `f64`s and sent directly into the `Quad`
-// constructor.
+// These are simple enough - since integers are inherently dyadic (as long as
+// they fit into `f64`s - see below), they can just be cast to `f64`s and sent
+// directly into the `Quad` constructor.
 //
-// The exceptions are the 64- and 128-bit integers, which don't fit into `f64`s. They get
-// their own separate functions that split them into 32-bit parts which are then
-// renormalized into a proper `Quad`.
+// The exceptions are the 64- and 128-bit integers, which don't fit into `f64`s.
+// They get their own separate functions that split them into 32-bit parts which
+// are then renormalized into a proper `Quad`.
 
 macro_rules! from_int_impl {
     ($(
@@ -172,8 +174,8 @@ from_int_impl! {
     u32
 }
 
-// Separate implementations for the 64-bit and 128-bit integers because they require
-// splitting to fit into 53-bit mantissas, so their code is different.
+// Separate implementations for the 64-bit and 128-bit integers because they
+// require splitting to fit into 53-bit mantissas, so their code is different.
 
 macro_rules! from_long_int_impl {
     ($(
@@ -235,15 +237,16 @@ from_long_int_impl! {
 
 // FROM FLOAT IMPLEMENTATIONS
 //
-// The Rust conversion from f32 to f64 is a bit-for-bit translation. It does not attempt to
-// account for floating point rounding error, so the parsed f64 is different from the
-// "equivalent" parsed f32. So rather than having a helper function that takes an f64, we
-// put the entire function into this macro so that `a.to_string().parse().unwrap()` calls
-// the f32 parser if an f32 is being converted.
+// The Rust conversion from f32 to f64 is a bit-for-bit translation. It does not
+// attempt to account for floating point rounding error, so the parsed f64 is
+// different from the "equivalent" parsed f32. So rather than having a helper
+// function that takes an f64, we put the entire function into this macro so
+// that `a.to_string().parse().unwrap()` calls the f32 parser if an f32 is being
+// converted.
 //
-// is_dyadic is still fine to convert for, because a dyadic f32 will convert accurately
-// into an f64 (and still return true) while a non-dyadic f32 may not convert accurately,
-// but it'll still be non-dyadic after the conversion.
+// is_dyadic is still fine to convert for, because a dyadic f32 will convert
+// accurately into an f64 (and still return true) while a non-dyadic f32 may not
+// convert accurately, but it'll still be non-dyadic after the conversion.
 macro_rules! from_float_impl {
     ($(
         $(#[$m:meta])*
@@ -274,7 +277,7 @@ macro_rules! from_float_impl {
                     //
                     // `unwrap` is safe because `a.to_string` will never return a string
                     // that can't be parsed into a Quad.
-                    a.to_string().parse().unwrap()
+                    alloc::string::ToString::to_string(&a).parse().unwrap()
                 }
             }
         }
@@ -339,16 +342,18 @@ from_float_impl! {
 impl From<(f64, f64)> for Quad {
     /// Generates a `Quad` from a 2-tuple of `f64`s.
     ///
-    /// This conversion acts like [`new`] does: it assumes that if you're creating a `Quad`
-    /// out of a pair of numbers, you already know what you want those numbers to be.
-    /// Therefore it neither renormalizes or accounts for rounding error.
+    /// This conversion acts like [`new`] does: it assumes that if you're
+    /// creating a `Quad` out of a pair of numbers, you already know what
+    /// you want those numbers to be. Therefore it neither renormalizes or
+    /// accounts for rounding error.
     ///
     /// The third and fourth components of the new `Quad` are set to 0.
     ///
-    /// No `From` implementations are provided for 2-tuples of other types. There is no way
-    /// to provide a pre-normalized pair of integers, and since tuple conversion doesn't
-    /// adjust for rounding error, it's better to make the user explicity cast `f32`s first
-    /// in the manner of their choosing.
+    /// No `From` implementations are provided for 2-tuples of other types.
+    /// There is no way to provide a pre-normalized pair of integers, and
+    /// since tuple conversion doesn't adjust for rounding error, it's
+    /// better to make the user explicity cast `f32`s first in the manner of
+    /// their choosing.
     ///
     /// # Examples
     /// ```
@@ -361,24 +366,24 @@ impl From<(f64, f64)> for Quad {
     ///
     /// [`new`]: #method.new
     #[inline]
-    fn from((a, b): (f64, f64)) -> Quad {
-        Quad(a, b, 0.0, 0.0)
-    }
+    fn from((a, b): (f64, f64)) -> Quad { Quad(a, b, 0.0, 0.0) }
 }
 
 impl From<(f64, f64, f64)> for Quad {
     /// Generates a `Quad` from a 3-tuple of `f64`s.
     ///
-    /// This conversion acts like [`new`] does: it assumes that if you're creating a `Quad`
-    /// out of a pair of numbers, you already know what you want those numbers to be.
-    /// Therefore it neither renormalizes or accounts for rounding error.
+    /// This conversion acts like [`new`] does: it assumes that if you're
+    /// creating a `Quad` out of a pair of numbers, you already know what
+    /// you want those numbers to be. Therefore it neither renormalizes or
+    /// accounts for rounding error.
     ///
     /// The fourth component of the new `Quad` is set to 0.
     ///
-    /// No `From` implementations are provided for 3-tuples of other types. There is no way
-    /// to provide a pre-normalized pair of integers, and since tuple conversion doesn't
-    /// adjust for rounding error, it's better to make the user explicity cast `f32`s first
-    /// in the manner of their choosing.
+    /// No `From` implementations are provided for 3-tuples of other types.
+    /// There is no way to provide a pre-normalized pair of integers, and
+    /// since tuple conversion doesn't adjust for rounding error, it's
+    /// better to make the user explicity cast `f32`s first in the manner of
+    /// their choosing.
     ///
     /// # Examples
     /// ```
@@ -391,22 +396,22 @@ impl From<(f64, f64, f64)> for Quad {
     ///
     /// [`new`]: #method.new
     #[inline]
-    fn from((a, b, c): (f64, f64, f64)) -> Quad {
-        Quad(a, b, c, 0.0)
-    }
+    fn from((a, b, c): (f64, f64, f64)) -> Quad { Quad(a, b, c, 0.0) }
 }
 
 impl From<(f64, f64, f64, f64)> for Quad {
     /// Generates a `Quad` from a 4-tuple of `f64`s.
     ///
-    /// This conversion acts like [`new`] does: it assumes that if you're creating a `Quad`
-    /// out of a pair of numbers, you already know what you want those numbers to be.
-    /// Therefore it neither renormalizes or accounts for rounding error.
+    /// This conversion acts like [`new`] does: it assumes that if you're
+    /// creating a `Quad` out of a pair of numbers, you already know what
+    /// you want those numbers to be. Therefore it neither renormalizes or
+    /// accounts for rounding error.
     ///
-    /// No `From` implementations are provided for 4-tuples of other types. There is no way
-    /// to provide a pre-normalized pair of integers, and since tuple conversion doesn't
-    /// adjust for rounding error, it's better to make the user explicity cast `f32`s first
-    /// in the manner of their choosing.
+    /// No `From` implementations are provided for 4-tuples of other types.
+    /// There is no way to provide a pre-normalized pair of integers, and
+    /// since tuple conversion doesn't adjust for rounding error, it's
+    /// better to make the user explicity cast `f32`s first in the manner of
+    /// their choosing.
     ///
     /// # Examples
     /// ```
@@ -423,17 +428,16 @@ impl From<(f64, f64, f64, f64)> for Quad {
     ///
     /// [`new`]: #method.new
     #[inline]
-    fn from((a, b, c, d): (f64, f64, f64, f64)) -> Quad {
-        Quad(a, b, c, d)
-    }
+    fn from((a, b, c, d): (f64, f64, f64, f64)) -> Quad { Quad(a, b, c, d) }
 }
 
 impl From<Double> for Quad {
     /// Generates a `Quad` from a `Double`.
     ///
     /// The new `Quad`'s third and fourth components will be used to account for
-    /// floating-point rounding error at the end of the `Double`, but it will of course
-    /// otherwise only have the precision of the `Double` used to make it.
+    /// floating-point rounding error at the end of the `Double`, but it will of
+    /// course otherwise only have the precision of the `Double` used to
+    /// make it.
     ///
     /// # Examples
     /// ```
@@ -445,24 +449,24 @@ impl From<Double> for Quad {
     /// let diff = (x - expected).abs();
     /// assert!(diff < qd!(1e-60));
     /// ```
-    fn from(a: Double) -> Quad {
-        a.to_string().parse().unwrap()
-    }
+    fn from(a: Double) -> Quad { a.to_string().parse().unwrap() }
 }
 
 impl From<&str> for Quad {
     /// Parses a string to create a `Quad`.
     ///
-    /// The parser works pretty similarly to parsers for `f32` and `f64`. It will fail if
-    /// characters are present that are not digits, decimal points, signs, or exponent
-    /// markers. It will also fail if there are multiples of these or if they're in the
-    /// wrong places; two decimal points or a negative sign after the number will both be
+    /// The parser works pretty similarly to parsers for `f32` and `f64`. It
+    /// will fail if characters are present that are not digits, decimal
+    /// points, signs, or exponent markers. It will also fail if there are
+    /// multiples of these or if they're in the wrong places; two decimal
+    /// points or a negative sign after the number will both be
     /// rejected, for instance.
     ///
-    /// Failure will return [`NAN`]. This can be an issue because parsing the string `"nan"`
-    /// *also* produces [`NAN`]. For this reason it's suggested to use [`from_str`] (or its
-    /// associated `parse` function) instead of this function if there is any chance that
-    /// the parsed string will be legitimately [`NAN`].
+    /// Failure will return [`NAN`]. This can be an issue because parsing the
+    /// string `"nan"` *also* produces [`NAN`]. For this reason it's
+    /// suggested to use [`from_str`] (or its associated `parse` function)
+    /// instead of this function if there is any chance that the parsed
+    /// string will be legitimately [`NAN`].
     ///
     /// # Examples
     /// ```
@@ -476,21 +480,20 @@ impl From<&str> for Quad {
     ///
     /// [`NAN`]: #associatedconstant.NAN
     /// [`from_str`]: #method.from_str
-    fn from(s: &str) -> Quad {
-        s.parse().unwrap_or(Quad::NAN)
-    }
+    fn from(s: &str) -> Quad { s.parse().unwrap_or(Quad::NAN) }
 }
 
 impl From<Quad> for f64 {
     /// Converts a `Quad` into an `f64`.
     ///
-    /// This will lose precision if the second component of the `Quad` is not 0, but it
-    /// will not lose range.
+    /// This will lose precision if the second component of the `Quad` is not 0,
+    /// but it will not lose range.
     ///
-    /// No other conversions from `Quad` to numeric types are provided, as every other one
-    /// has the capability of losing range (for example, no other type could be used to
-    /// represent `qd!(1e308)`). Casts can be made from the `f64` provided by this function
-    /// to other numeric types as needed.
+    /// No other conversions from `Quad` to numeric types are provided, as every
+    /// other one has the capability of losing range (for example, no other
+    /// type could be used to represent `qd!(1e308)`). Casts can be made
+    /// from the `f64` provided by this function to other numeric types as
+    /// needed.
     ///
     /// # Examples
     /// ```
@@ -498,22 +501,21 @@ impl From<Quad> for f64 {
     /// let a = Quad::PI;
     /// let x = f64::from(a);
     ///
-    /// let diff = (x - std::f64::consts::PI).abs();
+    /// let diff = (x - core::f64::consts::PI).abs();
     /// assert!(diff < 1e-15);
     /// ```
     #[inline]
-    fn from(a: Quad) -> f64 {
-        a.0
-    }
+    fn from(a: Quad) -> f64 { a.0 }
 }
 
 impl From<Quad> for (f64, f64) {
     /// Converts a `Quad` into a 2-tuple of `f64`s.
     ///
-    /// The first two components of the `Quad` become the components of the returned tuple.
-    /// Note that, while the value of the first component is simply the `f64` cast of the
-    /// `Quad` itself, the second component encodes the next digits of the `Quad` *plus*
-    /// the rounding error in the first component. For that reason, it's not likely to be
+    /// The first two components of the `Quad` become the components of the
+    /// returned tuple. Note that, while the value of the first component is
+    /// simply the `f64` cast of the `Quad` itself, the second component
+    /// encodes the next digits of the `Quad` *plus* the rounding error in
+    /// the first component. For that reason, it's not likely to be
     /// very useful outside of a `Quad` context.
     ///
     /// # Examples
@@ -524,19 +526,18 @@ impl From<Quad> for (f64, f64) {
     /// assert!(b == 1.2246467991473532e-16); // *not* the next 16 digits of π
     /// ```
     #[inline]
-    fn from(a: Quad) -> (f64, f64) {
-        (a.0, a.1)
-    }
+    fn from(a: Quad) -> (f64, f64) { (a.0, a.1) }
 }
 
 impl From<Quad> for (f64, f64, f64) {
     /// Converts a `Quad` into a 3-tuple of `f64`s.
     ///
-    /// The first three components of the `Quad` become the components of the returned
-    /// tuple. Note that, while the value of the first component is simply the `f64` cast of
-    /// the `Quad` itself, the other components encode the next digits of the `Quad` *plus*
-    /// the rounding error in the prior components. For that reason, they're not likely to
-    /// be very useful outside of a `Quad` context.
+    /// The first three components of the `Quad` become the components of the
+    /// returned tuple. Note that, while the value of the first component is
+    /// simply the `f64` cast of the `Quad` itself, the other components
+    /// encode the next digits of the `Quad` *plus* the rounding error in
+    /// the prior components. For that reason, they're not likely to be very
+    /// useful outside of a `Quad` context.
     ///
     /// # Examples
     /// ```
@@ -547,19 +548,18 @@ impl From<Quad> for (f64, f64, f64) {
     /// assert!(c == -2.9947698097183397e-33);
     /// ```
     #[inline]
-    fn from(a: Quad) -> (f64, f64, f64) {
-        (a.0, a.1, a.2)
-    }
+    fn from(a: Quad) -> (f64, f64, f64) { (a.0, a.1, a.2) }
 }
 
 impl From<Quad> for (f64, f64, f64, f64) {
     /// Converts a `Quad` into a 4-tuple of `f64`s.
     ///
-    /// The components of the `Quad` become the components of the returned tuple. Note that,
-    /// while the value of the first component is simply the `f64` cast of the `Quad`
-    /// itself, the other components encode the next digits of the `Quad` *plus* the
-    /// rounding error in the prior components. For that reason, they're not likely to be
-    /// very useful outside of a `Quad` context.
+    /// The components of the `Quad` become the components of the returned
+    /// tuple. Note that, while the value of the first component is simply
+    /// the `f64` cast of the `Quad` itself, the other components encode the
+    /// next digits of the `Quad` *plus* the rounding error in the prior
+    /// components. For that reason, they're not likely to be very useful
+    /// outside of a `Quad` context.
     ///
     /// # Examples
     /// ```
@@ -571,9 +571,7 @@ impl From<Quad> for (f64, f64, f64, f64) {
     /// assert!(d == 1.1124542208633655e-49);
     /// ```
     #[inline]
-    fn from(a: Quad) -> (f64, f64, f64, f64) {
-        (a.0, a.1, a.2, a.3)
-    }
+    fn from(a: Quad) -> (f64, f64, f64, f64) { (a.0, a.1, a.2, a.3) }
 }
 
 #[cfg(test)]
@@ -596,13 +594,13 @@ mod tests {
             qd!(-0.0f32);
         f32_inf:
             Quad::INFINITY,
-            std::f32::INFINITY;
+            core::f32::INFINITY;
         f32_neg_inf:
             Quad::NEG_INFINITY,
-            std::f32::NEG_INFINITY;
+            core::f32::NEG_INFINITY;
         f32_nan:
             Quad::NAN,
-            std::f32::NAN;
+            core::f32::NAN;
     );
     test!(f32_nonrep: {
         assert_ne!(qd!(1.1f32).1, 0.0);
@@ -627,13 +625,13 @@ mod tests {
             qd!(-0.0);
         f64_inf:
             Quad::INFINITY,
-            std::f64::INFINITY;
+            core::f64::INFINITY;
         f64_neg_inf:
             Quad::NEG_INFINITY,
-            std::f64::NEG_INFINITY;
+            core::f64::NEG_INFINITY;
         f64_nan:
             Quad::NAN,
-            std::f64::NAN;
+            core::f64::NAN;
     );
     test!(f64_nonrep: {
         assert_ne!(qd!(1.1).1, 0.0);

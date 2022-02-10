@@ -6,14 +6,14 @@
 use crate::common::primitive as p;
 use crate::common::utils as u;
 use crate::double::Double;
-use std::ops::{Add, AddAssign};
+use core::ops::{Add, AddAssign};
 
 #[allow(clippy::suspicious_arithmetic_impl)]
 impl Add for Double {
     type Output = Double;
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
     /// This implements the `+` operator between two `Double`s.
     ///
@@ -43,8 +43,8 @@ impl Add for Double {
 impl Add for &Double {
     type Output = Double;
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
     /// This implements the `+` operator between two references to `Double`s.
     ///
@@ -58,18 +58,17 @@ impl Add for &Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn add(self, other: &Double) -> Double {
-        (*self).add(*other)
-    }
+    fn add(self, other: &Double) -> Double { (*self).add(*other) }
 }
 
 impl Add<&Double> for Double {
     type Output = Double;
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
-    /// This implements the `+` operator between a `Double` and a reference to a `Double`.
+    /// This implements the `+` operator between a `Double` and a reference to a
+    /// `Double`.
     ///
     /// # Examples
     /// ```
@@ -81,18 +80,17 @@ impl Add<&Double> for Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn add(self, other: &Double) -> Double {
-        self.add(*other)
-    }
+    fn add(self, other: &Double) -> Double { self.add(*other) }
 }
 
 impl Add<Double> for &Double {
     type Output = Double;
 
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing a new
-    /// `Double` as the result.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, producing
+    /// a new `Double` as the result.
     ///
-    /// This implements the `+` operator between a refernce to a `Double` and a `Double`.
+    /// This implements the `+` operator between a refernce to a `Double` and a
+    /// `Double`.
     ///
     /// # Examples
     /// ```
@@ -104,14 +102,12 @@ impl Add<Double> for &Double {
     /// assert!(diff < dd!(1e-30));
     /// ```
     #[inline]
-    fn add(self, other: Double) -> Double {
-        (*self).add(other)
-    }
+    fn add(self, other: Double) -> Double { (*self).add(other) }
 }
 
 impl AddAssign for Double {
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
     /// This implements the `+=` operator between two `Double`s.
     ///
@@ -134,10 +130,11 @@ impl AddAssign for Double {
 }
 
 impl AddAssign<&Double> for Double {
-    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning the result
-    /// to `self`.
+    /// Computes $x + y$, where $x$ is `self` and $y$ is the argument, assigning
+    /// the result to `self`.
     ///
-    /// This implements the `+=` operator between a `Double` and a reference to a `Double`.
+    /// This implements the `+=` operator between a `Double` and a reference to
+    /// a `Double`.
     ///
     /// # Examples
     /// ```
@@ -160,12 +157,13 @@ impl AddAssign<&Double> for Double {
 impl Double {
     // Precalc functions
     //
-    // This series of functions returns `Some` with a value that is to be returned, if it
-    // turns out that the function doesn't have to be calculated because a shortcut result
-    // is known. They return `None` if the value has to be calculated normally.
+    // This series of functions returns `Some` with a value that is to be returned,
+    // if it turns out that the function doesn't have to be calculated because a
+    // shortcut result is known. They return `None` if the value has to be
+    // calculated normally.
     //
-    // This keeps the public functions from being mucked up with code that does validation
-    // rather than calculation.
+    // This keeps the public functions from being mucked up with code that does
+    // validation rather than calculation.
 
     #[inline]
     fn pre_add(&self, other: &Double) -> Option<Double> {
@@ -295,8 +293,8 @@ mod tests {
             Double::NAN + Double::NAN;
     );
 
-    // Assign tests. Assign code delegates to add code, so there's no need to re-test all
-    // of the cases above.
+    // Assign tests. Assign code delegates to add code, so there's no need to
+    // re-test all of the cases above.
     test_all!(
         assign_num: {
             let mut a = Double::PI;

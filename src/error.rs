@@ -8,7 +8,7 @@
 //! [`Double`]: struct.Double.html
 //! [`Quad`]: struct.Quad.html
 
-use std::fmt::{Display, Formatter, Result};
+use alloc::fmt::{Display, Formatter, Result};
 
 /// An error generated when a problem is encountered parsing a string into a [`Double`].
 /// 
