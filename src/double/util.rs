@@ -1,6 +1,27 @@
 use crate::double::Double;
 
 impl Double {
+    /// Returns the minimum of the two numbers.
+    pub fn min(self, other: Self) -> Self {
+        match self.partial_cmp(&other) {
+            Some(ordering) => match ordering {
+                core::cmp::Ordering::Less | core::cmp::Ordering::Equal => self,
+                core::cmp::Ordering::Greater => other,
+            },
+            None => other,
+        }
+    }
+
+    pub fn max(self, other: Self) -> Self {
+        match self.partial_cmp(&other) {
+            Some(ordering) => match ordering {
+                core::cmp::Ordering::Less | core::cmp::Ordering::Equal => other,
+                core::cmp::Ordering::Greater => self,
+            },
+            None => other,
+        }
+    }
+
     /// Raw transmutation from `u128`.
     pub fn from_bits(b: u128) -> Self { unsafe { core::mem::transmute::<u128, Self>(b) } }
 
